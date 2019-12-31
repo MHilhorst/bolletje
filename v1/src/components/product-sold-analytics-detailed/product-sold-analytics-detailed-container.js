@@ -1,24 +1,21 @@
-import React from "react";
-import ProductSoldAnalyticsDetailedView from "./product-sold-analytics-detailed-view";
-import { getOfferTrackInfo } from "../../utils/bol";
+import React from 'react';
+import ProductSoldAnalyticsDetailedView from './product-sold-analytics-detailed-view';
+import { getOffersTrackInfoOfProduct } from '../../utils/bol';
 export default class ProductSoldAnalyticsDetailedContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      trackOfferInfo: null
+      offers: null
     };
   }
   async componentDidMount() {
-    const trackOfferInfo = await getOfferTrackInfo(1001033596665131);
-    this.setState({ trackOfferInfo: trackOfferInfo.doc });
+    const id = this.props.match.params.id;
+    const offers = await getOffersTrackInfoOfProduct(id);
+    this.setState({ offers: offers });
   }
   render() {
-    if (this.state.trackOfferInfo) {
-      return (
-        <ProductSoldAnalyticsDetailedView
-          trackOfferInfo={this.state.trackOfferInfo}
-        />
-      );
+    if (this.state.offers) {
+      return <ProductSoldAnalyticsDetailedView offers={this.state.offers} />;
     } else {
       return null;
     }

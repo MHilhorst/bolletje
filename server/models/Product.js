@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
@@ -22,7 +22,15 @@ const ProductSchema = new Schema({
   },
   offer_ids: {
     type: Array
+  },
+  total_sold: {
+    type: Number,
+    default: 0
+  },
+  tracking_since: {
+    type: Date,
+    default: Date.now()
   }
 });
 
-module.exports = mongoose.model("Product", ProductSchema);
+module.exports = mongoose.model('Product', ProductSchema);

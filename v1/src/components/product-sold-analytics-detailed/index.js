@@ -1,1 +1,1 @@
-export { default } from "./product-sold-analytics-detailed-container";
+export { default } from './product-sold-analytics-detailed-container';

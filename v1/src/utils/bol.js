@@ -1,12 +1,12 @@
-import Cookies from "js-cookie";
-import config from "../config";
+import Cookies from 'js-cookie';
+import config from '../config';
 
 export const reloadOffers = async () => {
-  const jwt = Cookies.get("token");
+  const jwt = Cookies.get('token');
   if (jwt) {
     const response = await fetch(`${config.host}/api/bol/offers/update`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json", Authorization: jwt }
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', Authorization: jwt }
     });
     const data = await response.json();
     return data;
@@ -22,12 +22,12 @@ export const createOffer = async (
   stockAmount,
   fulfilment
 ) => {
-  const jwt = Cookies.get("token");
+  const jwt = Cookies.get('token');
   const data = { ean, condition, price, stockAmount, fulfilment };
   if (jwt) {
     const response = await fetch(`${config.host}/api/bol/offer`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: jwt },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: jwt },
       body: JSON.stringify(data)
     });
     const responseData = await response.json();
@@ -36,11 +36,11 @@ export const createOffer = async (
 };
 
 export const getOffer = id => {
-  const jwt = Cookies.get("token");
+  const jwt = Cookies.get('token');
   if (jwt) {
     fetch(`${config.host}/api/bol/offer/${id}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json", Authorization: jwt }
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', Authorization: jwt }
     })
       .then(res => res.json())
       .then(data => {
@@ -49,20 +49,20 @@ export const getOffer = id => {
   }
 };
 export const getTrackedProducts = async () => {
-  const jwt = Cookies.get("token");
+  const jwt = Cookies.get('token');
   const response = await fetch(`${config.host}/api/bol/products`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json", Authorization: jwt }
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt }
   });
   const data = await response.json();
   return data.products;
 };
 
 export const trackNewProduct = async productId => {
-  const jwt = Cookies.get("token");
+  const jwt = Cookies.get('token');
   const response = await fetch(`${config.host}/api/bol/products`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: jwt },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt },
     body: JSON.stringify({ productId })
   });
   const data = await response.json();
@@ -71,11 +71,21 @@ export const trackNewProduct = async productId => {
 };
 
 export const getOfferTrackInfo = async id => {
-  const jwt = Cookies.get("token");
+  const jwt = Cookies.get('token');
   const response = await fetch(`${config.host}/api/bol/offer/track/${id}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json", Authorization: jwt }
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt }
   });
   const data = await response.json();
   return data;
+};
+
+export const getOffersTrackInfoOfProduct = async id => {
+  const jwt = Cookies.get('token');
+  const response = await fetch(`${config.host}/api/bol/product/offers/${id}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt }
+  });
+  const data = await response.json();
+  return data.offers;
 };

@@ -1,6 +1,6 @@
-import React from "react";
-import ProductSoldAnalyticsView from "./product-sold-analytics-view";
-import { trackNewProduct, getTrackedProducts } from "../../utils/bol";
+import React from 'react';
+import ProductSoldAnalyticsView from './product-sold-analytics-view';
+import { trackNewProduct, getTrackedProducts } from '../../utils/bol';
 export default class ProductSoldAnalyticsContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -22,14 +22,18 @@ export default class ProductSoldAnalyticsContainer extends React.Component {
     this.setState({ products });
   }
   render() {
-    return (
-      <ProductSoldAnalyticsView
-        handleTrackNewProduct={this.handleTrackNewProduct}
-        handleProductId={this.handleProductId}
-        productId={this.state.productId}
-        products={this.state.products}
-        {...this.props}
-      />
-    );
+    if (this.state.products.length >= 1) {
+      return (
+        <ProductSoldAnalyticsView
+          handleTrackNewProduct={this.handleTrackNewProduct}
+          handleProductId={this.handleProductId}
+          productId={this.state.productId}
+          products={this.state.products}
+          {...this.props}
+        />
+      );
+    } else {
+      return null;
+    }
   }
 }
