@@ -1,7 +1,7 @@
-const fetch = require('node-fetch');
-const { getStock, getPriceOneItem } = require('./openApiBolServices');
-const Offer = require('../models/Offer');
-const Product = require('../models/Product');
+const fetch = require("node-fetch");
+const { getStock, getPriceOneItem } = require("./openApiBolServices");
+const Offer = require("../models/Offer");
+const Product = require("../models/Product");
 
 const saveOffer = async (offerId, offerInfo) => {
   const offerExist = await Offer.findOne({ public_offer_id: offerId }).exec();
@@ -28,20 +28,21 @@ const analyzeStock = async (offerId, offer, priceOneUnit) => {
     product_id: offer.product.id
   }).exec();
   if (offerDoc.updates.length > 0) {
-    console.log('analyzing');
     const oldOfferInfo = offerDoc.updates[offerDoc.updates.length - 1];
+    const sold =
+      oldOfferInfo.quantity - offer.quantity > 0
+        ? oldOfferInfo.quantity - offer.quantity
+        : 0;
     const newOfferInfo = {
       time_checked: Date.now(),
       quantity: offer.quantity,
-      quantitySoldSincePrevious: oldOfferInfo.quantity - offer.quantity,
+      quantitySoldSincePrevious: sold,
       price: priceOneUnit
     };
     offerDoc.updates.push(newOfferInfo);
-    if (newOfferInfo.quantitySoldSincePrevious > 0) {
-      offerDoc.total_sold =
-        (offerDoc.total_sold || 0) + newOfferInfo.quantitySoldSincePrevious;
-      productDoc.total_sold =
-        (productDoc.total_sold || 0) + newOfferInfo.quantitySoldSincePrevious;
+    if (sold > 0) {
+      offerDoc.total_sold = (offerDoc.total_sold || 0) + sold;
+      productDoc.total_sold = (productDoc.total_sold || 0) + sold;
     }
     offerDoc.quantity = offer.quantity;
     offerDoc.price = priceOneUnit;
@@ -64,12 +65,22 @@ const trackNewOffer = async publicOfferId => {
   saveOffer(publicOfferId, offer);
 };
 
+const getProductsToMonitor = async () => {
+  const products = Product.find({}).exec();
+  return products;
+};
+
 const monitor = async () => {
   setInterval(async () => {
-    const offer = await getStock(1001033596665131, 500);
-    const priceOneUnit = await getPriceOneItem(1001033596665131);
-    analyzeStock(1001033596665131, offer, priceOneUnit);
-  }, 30000);
+    const products = await getProductsToMonitor();
+    products.map(async product => {
+      product.offer_ids.map(async offerItem => {
+        const offer = await getStock(offerItem.id, 500);
+        const priceOneUnit = await getPriceOneItem(offerItem.id);
+        analyzeStock(offerItem.id, offer, priceOneUnit);
+      });
+    });
+  }, 3600000);
 };
 
 module.exports = monitor;
