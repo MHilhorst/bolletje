@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
   product_id: {
-    type: Number
+    type: String
   },
   ean: {
     type: Number

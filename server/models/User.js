@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -31,7 +31,10 @@ const UserSchema = new Schema({
   last_update_access_token: {
     type: Date
   },
-  access_token: { type: String }
+  access_token: { type: String },
+  own_offers: {
+    type: Array
+  }
 });
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model('User', UserSchema);
