@@ -1,6 +1,6 @@
-import React from "react";
-import PriceCheckerView from "./price-checker-view";
-import { reloadOffers } from "../../utils/bol";
+import React from 'react';
+import PriceCheckerView from './price-checker-view';
+import { reloadOffers } from '../../utils/bol';
 
 const findSeller = (array, value) => {
   for (var i = 0; i < array.length; i += 1) {
@@ -20,9 +20,13 @@ export default class PriceCheckerContainer extends React.Component {
       tableOffers: []
     };
   }
+  onChange = (key, value) => {
+    this.setState({ [key]: value });
+    console.log(this.state.autoPriceChanger);
+  };
   componentDidMount() {
-    const offers = JSON.parse(localStorage.getItem("offers"));
-    const tableOffers = JSON.parse(localStorage.getItem("tableOffers"));
+    const offers = JSON.parse(localStorage.getItem('offers'));
+    const tableOffers = JSON.parse(localStorage.getItem('tableOffers'));
     console.log(this.props.user);
     this.setState({ offers, tableOffers });
   }
@@ -55,9 +59,9 @@ export default class PriceCheckerContainer extends React.Component {
           tableOffers: offerTableSchema,
           loadingOffers: false
         });
-        localStorage.setItem("offers", JSON.stringify(this.state.offers));
+        localStorage.setItem('offers', JSON.stringify(this.state.offers));
         localStorage.setItem(
-          "tableOffers",
+          'tableOffers',
           JSON.stringify(this.state.tableOffers)
         );
       }
@@ -69,6 +73,9 @@ export default class PriceCheckerContainer extends React.Component {
         handleReloadOffers={this.handleReloadOffers}
         offers={this.state.offers}
         tableOffers={this.state.tableOffers}
+        onChange={this.onChange}
+        autoPriceChanger={this.state.autoPriceChanger}
+        profit={this.state.profit}
       />
     );
   }

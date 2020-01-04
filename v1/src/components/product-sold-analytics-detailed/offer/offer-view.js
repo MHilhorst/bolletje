@@ -1,18 +1,28 @@
-import React from "react";
+import React from 'react';
 import {
   XYPlot,
   XAxis,
   YAxis,
   HorizontalGridLines,
   LineMarkSeries,
-  makeVisFlexible
-} from "react-vis";
-import { Descriptions, Badge } from "antd";
-import PropTypes from "prop-types";
+  makeVisFlexible,
+  Hint
+} from 'react-vis';
+import { Descriptions, Badge } from 'antd';
+import PropTypes from 'prop-types';
 
-const Plot = ({ width, measurements, highestQuantity, lowestQuantity }) => {
+const Plot = ({
+  width,
+  measurements,
+  highestQuantity,
+  lowestQuantity,
+  setHint,
+  value,
+  onMouseLeave
+}) => {
   return (
     <XYPlot
+      onMouseLeave={onMouseLeave}
       height={400}
       width={width}
       yDomain={[
@@ -25,11 +35,13 @@ const Plot = ({ width, measurements, highestQuantity, lowestQuantity }) => {
       <LineMarkSeries
         data={measurements}
         style={{
-          strokeWidth: "2px"
+          strokeWidth: '2px'
         }}
-        lineStyle={{ stroke: "#1890ff" }}
-        markStyle={{ stroke: "rgba(255, 255, 255)", fill: "#1890ff" }}
+        lineStyle={{ stroke: '#1890ff' }}
+        markStyle={{ stroke: 'rgba(255, 255, 255)', fill: '#1890ff' }}
+        onNearestX={setHint}
       />
+      {value ? <Hint value={value} /> : null}
       <LineMarkSeries />
       <XAxis />
       <YAxis />
@@ -40,7 +52,10 @@ Plot.propTypes = {
   width: PropTypes.number,
   measurements: PropTypes.array,
   highestQuantity: PropTypes.number,
-  lowestQuantity: PropTypes.number
+  lowestQuantity: PropTypes.number,
+  setHint: PropTypes.func,
+  value: PropTypes.object,
+  onMouseLeave: PropTypes.func
 };
 const FlexibleXYPlot = makeVisFlexible(Plot);
 
@@ -51,7 +66,8 @@ export default class OfferView extends React.Component {
       stock: [],
       price: [],
       highestQuantity: 0,
-      lowestQuantity: 0
+      lowestQuantity: 0,
+      value: null
     };
   }
 
@@ -81,12 +97,15 @@ export default class OfferView extends React.Component {
         const hh = date.getHours();
         const dd = date.getDate();
         const mm = date.getMonth() + 1; //January is 0!
-        const today = dd + "/" + mm + " " + hh + ":00";
+        const today = dd + '/' + mm + ' ' + hh + ':00';
         stock.push({ y: update.quantity, x: today });
         price.push({ y: update.price, x: today });
       }
     });
     return { stock, price, lowestQuantity, highestQuantity };
+  };
+  setHint = d => {
+    this.setState({ value: d });
   };
   render() {
     if (this.state.stock) {
@@ -111,6 +130,11 @@ export default class OfferView extends React.Component {
             measurements={this.state.stock}
             highestQuantity={this.state.highestQuantity}
             lowestQuantity={this.state.lowestQuantity}
+            setHint={this.setHint}
+            value={this.state.value}
+            onMouseLeave={() => {
+              this.setState({ value: null });
+            }}
           />
         </>
       );
