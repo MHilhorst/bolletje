@@ -98,3 +98,48 @@ export const getOffersTrackInfoOfProduct = async id => {
   const data = await response.json();
   return data.offers;
 };
+
+export const updateAutoOffer = async bodyData => {
+  const jwt = Cookies.get("token");
+  const response = await fetch(`${config.host}/api/track/offer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: jwt },
+    body: JSON.stringify(bodyData)
+  });
+  const data = await response.json();
+  return data;
+};
+
+export const getAutoOfferInfo = async autoOfferId => {
+  const jwt = Cookies.get("token");
+  const response = await fetch(
+    `${config.host}/api/track/offer/${autoOfferId}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json", Authorization: jwt }
+    }
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const getUserOwnOffers = async () => {
+  const jwt = Cookies.get("token");
+  const response = await fetch(`${config.host}/api/bol/offers`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json", Authorization: jwt }
+  });
+  const data = await response.json();
+  return data;
+};
+
+export const getCommission = async (ean, price) => {
+  const jwt = Cookies.get("token");
+  const response = await fetch(`${config.host}/api/track/commission`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: jwt },
+    body: JSON.stringify({ ean, price })
+  });
+  const data = await response.json();
+  return data;
+};

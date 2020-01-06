@@ -8,9 +8,6 @@ class NavigationBarView extends React.Component {
       visible: false
     };
   }
-  componentDidMount() {
-    console.log(this.props.user);
-  }
   showDrawer = () => {
     this.setState({
       visible: true

@@ -150,9 +150,76 @@ const createOffer = async (
   }
 };
 
+const updatePrice = async (offerId, price, token) => {
+  const response = await fetch(
+    `https://api.bol.com/retailer/offers/${offerId}/price`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: token,
+        Accept: "application/vnd.retailer.v3+json",
+        "Content-Type": "application/vnd.retailer.v3+json"
+      },
+      body: JSON.stringify({
+        pricing: { bundlePrices: [{ quantity: 1, price }] }
+      })
+    }
+  );
+  const data = await response.json();
+  if (data.id) {
+    return await requestProcessStatus(data.id, token);
+  }
+};
+
+const updateStock = async (offerId, amount, token) => {
+  const response = await fetch(
+    `https://api.bol.com/retailer/offers/${offerId}/stock`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: token,
+        Accept: "application/vnd.retailer.v3+json",
+        "Content-Type": "application/vnd.retailer.v3+json"
+      },
+      body: JSON.stringify({
+        amount,
+        managedByRetailer: false
+      })
+    }
+  );
+  const data = await response.json();
+  if (data.id) {
+    return await requestProcessStatus(data.id, token);
+  }
+};
+
+const getCommission = async (ean, price, token) => {
+  const response = await fetch("https://api.bol.com/retailer/commission", {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      Accept: "application/vnd.retailer.v3+json",
+      "Content-Type": "application/vnd.retailer.v3+json"
+    },
+    body: JSON.stringify({
+      commissionQueries: [
+        {
+          ean,
+          condition: "NEW",
+          price
+        }
+      ]
+    })
+  });
+  const data = await response.json();
+  return data.commissions[0];
+};
 module.exports.getInventory = getInventory;
 module.exports.createOffer = createOffer;
 module.exports.getOffer = getOffer;
 module.exports.requestOffersList = requestOffersList;
 module.exports.getOffers = getOffers;
 module.exports.requestProcessStatus = requestProcessStatus;
+module.exports.updatePrice = updatePrice;
+module.exports.updateStock = updateStock;
+module.exports.getCommission = getCommission;

@@ -44,4 +44,5 @@ passport.deserializeUser((user, done) => {
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/user", require("./routes/user"));
 app.use("/api/bol", require("./routes/bol"));
+app.use("/api/track", require("./routes/track"));
 server.listen(8000, () => console.log(`Mixing it up on port ${PORT}`));

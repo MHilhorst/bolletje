@@ -35,36 +35,29 @@ class BaseLayout extends React.Component {
           </HeaderLogo>
           <Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
             <Menu.Item key="1" onClick={() => this.props.history.push("/")}>
-              <Icon type="user" />
-              <span>nav 1</span>
+              <Icon type="dashboard" />
+              <span>Dashboard</span>
             </Menu.Item>
             <Menu.Item
               key="2"
               onClick={() => this.props.history.push("/search-analytics")}
             >
-              <Icon type="video-camera" />
-              <span>nav 2</span>
-            </Menu.Item>
-            <Menu.Item
-              key="3"
-              onClick={() => this.props.history.push("/profile")}
-            >
-              <Icon type="upload" />
-              <span>nav 3</span>
+              <Icon type="scan" />
+              <span>Search Analytics</span>
             </Menu.Item>
             <Menu.Item
               key="4"
               onClick={() => this.props.history.push("/product-sold-analytics")}
             >
-              <Icon type="upload" />
-              <span>nav 4</span>
+              <Icon type="monitor" />
+              <span>Product Analytics</span>
             </Menu.Item>
             <Menu.Item
               key="5"
               onClick={() => this.props.history.push("/price-checker")}
             >
-              <Icon type="upload" />
-              <span>nav 5</span>
+              <Icon type="control" />
+              <span>Offer Management</span>
             </Menu.Item>
             <Menu.Item
               key="6"
