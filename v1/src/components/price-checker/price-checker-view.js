@@ -1,20 +1,36 @@
-import React from "react";
-import { Box, ModalSwitchItem } from "../../styles/style";
+import React from 'react';
+import { Box, ModalSwitchItem } from '../../styles/style';
 import {
   Button,
   Table,
   Modal,
   Tag,
   Switch,
+  Slider,
   Typography,
   Divider,
   InputNumber
-} from "antd";
-import { getAutoOfferInfo } from "../../utils/bol";
+} from 'antd';
+import { getAutoOfferInfo } from '../../utils/bol';
 const { Text } = Typography;
 
 const WAIT_INTERVAL = 1000;
 const ENTER_KEY = 13;
+
+// {this.props.autoPriceChanger && (
+//   <>
+//     {/* <Slider defaultValue={10} tooltipVisible /> */}
+//     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+//       <Text strong style={{ fontSize: '0.7rem' }}>
+//         Minimum Price on Bol.com{' '}
+//         {(this.props.bolCommissionPercentage / 100) *
+//           this.props.priceUpdate +
+//           this.props.additionalCosts +
+//           this.props.minProfit}
+//       </Text>
+//     </div>
+//   </>
+// )}
 
 export default class PriceCheckerView extends React.Component {
   constructor(props) {
@@ -25,46 +41,41 @@ export default class PriceCheckerView extends React.Component {
     };
     this.columns = [
       {
-        title: "Product Name",
-        dataIndex: "productName",
-        key: "productName"
+        title: 'Product Name',
+        dataIndex: 'productName',
+        key: 'productName'
       },
       {
-        title: "Live tracking",
-        dataIndex: "liveTracking",
-        key: "liveTracking",
+        title: 'Live tracking',
+        dataIndex: 'liveTracking',
+        key: 'liveTracking',
         render: value => {
           if (value) return <Tag color="blue">Tracking</Tag>;
         }
       },
       {
-        title: "Current Price",
-        dataIndex: "currentPrice",
-        key: "currentPrice"
+        title: 'Current Price',
+        dataIndex: 'currentPrice',
+        key: 'currentPrice'
       },
       {
-        title: "Current Stock",
-        dataIndex: "currentStock",
-        key: "currentStock"
+        title: 'Current Stock',
+        dataIndex: 'currentStock',
+        key: 'currentStock'
       },
       {
-        title: "Total sellers",
-        dataIndex: "totalSellers",
-        key: "totalSellers"
+        title: 'Total sellers',
+        dataIndex: 'totalSellers',
+        key: 'totalSellers'
       },
       {
-        title: "Profit",
-        dataIndex: "profit",
-        key: "profit"
+        title: 'Offer Rank',
+        dataIndex: 'offerRank',
+        key: 'offerRank'
       },
       {
-        title: "Offer Rank",
-        dataIndex: "offerRank",
-        key: "offerRank"
-      },
-      {
-        title: "Configure",
-        key: "configure",
+        title: 'Configure',
+        key: 'configure',
         render: value => (
           <span>
             <a onClick={() => this.handleModal(value)}>Configure</a>
@@ -73,6 +84,7 @@ export default class PriceCheckerView extends React.Component {
       }
     ];
     this.timer = null;
+    this.minListingTimer = null;
 
     this.handleModal = this.handleModal.bind(this);
     this.handleOk = this.handleOk.bind(this);
@@ -81,13 +93,15 @@ export default class PriceCheckerView extends React.Component {
   }
   handleModal = async e => {
     const autoOfferInfo = await getAutoOfferInfo(e.offerInfo.autoOffer._id);
-    this.props.onChange("currentOfferId", autoOfferInfo.offer_id);
-    this.props.onChange("minProfit", autoOfferInfo.min_profit);
-    this.props.onChange("additionalCosts", autoOfferInfo.additional_costs);
-    this.props.onChange("priceUpdate", e.currentPrice);
-    this.props.onChange("autoPriceChanger", e.auto_track);
-    this.props.onChange("stockUpdate", e.currentStock);
-    this.props.handleCommission(e.ean, e.currentPrice);
+    this.props.onChange('currentOfferId', autoOfferInfo.offer_id);
+    this.props.onChange('minProfit', autoOfferInfo.min_profit);
+    this.props.onChange('minListingPrice', autoOfferInfo.min_listing_price);
+    this.props.onChange('additionalCosts', autoOfferInfo.additional_costs);
+    this.props.onChange('priceUpdate', e.currentPrice);
+    this.props.onChange('autoPriceChanger', autoOfferInfo.auto_track);
+    this.props.onChange('stockUpdate', e.currentStock);
+    this.props.handleCommission(e.ean, e.currentPrice, false);
+    this.props.handleCommission(e.ean, this.props.minListingPrice, true);
     this.setState({ showModal: true, selectedOffer: e, autoOfferInfo });
   };
   handleOk = () => {
@@ -98,24 +112,36 @@ export default class PriceCheckerView extends React.Component {
     this.setState({ showModal: false });
   };
   handleChangeAutoPrice = checked => {
-    this.props.onChange("autoPriceChanger", checked);
+    this.props.onChange('autoPriceChanger', checked);
   };
   handleChangeMinProfit = e => {
-    this.props.onChange("minProfit", e);
+    this.props.onChange('minProfit', e);
+  };
+  handleChangeMinListingPrice = e => {
+    this.props.onChange('minListingPrice', e);
+    clearTimeout(this.minListingtimer);
+    this.minListingtimer = setTimeout(() => {
+      this.props.handleCommission(
+        this.state.selectedOffer.ean,
+        this.props.minListingPrice,
+        true
+      );
+    }, WAIT_INTERVAL);
   };
   handleAdditionalCosts = e => {
-    this.props.onChange("additionalCosts", e);
+    this.props.onChange('additionalCosts', e);
   };
   handleUpdateStockChange = e => {
-    this.props.onChange("stockUpdate", e);
+    this.props.onChange('stockUpdate', e);
   };
   handleUpdatePriceChange = e => {
-    this.props.onChange("priceUpdate", e);
+    this.props.onChange('priceUpdate', e);
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       this.props.handleCommission(
         this.state.selectedOffer.ean,
-        this.props.priceUpdate
+        this.props.priceUpdate,
+        false
       );
     }, WAIT_INTERVAL);
   };
@@ -133,7 +159,7 @@ export default class PriceCheckerView extends React.Component {
         </Box>
         {this.state.selectedOffer && (
           <Modal
-            title="Basic Modal"
+            title="Offer configuration"
             visible={this.state.showModal}
             onOk={this.handleOk}
             onCancel={this.handleCancel}
@@ -141,23 +167,44 @@ export default class PriceCheckerView extends React.Component {
             <ModalSwitchItem>
               <Text>Auto Price updater</Text>
               <Switch
-                defaultChecked={
-                  this.state.autoOfferInfo.auto_track ? true : false
-                }
+                defaultChecked={this.state.autoOfferInfo.auto_track}
                 onChange={this.handleChangeAutoPrice}
               />
             </ModalSwitchItem>
             {this.props.autoPriceChanger && (
               <ModalSwitchItem style={{ marginTop: 15 }}>
-                <Text>Minimum profit boundary</Text>
+                <Text>Minimum Price boundary</Text>
                 <InputNumber
-                  defaultValue={this.props.minProfit}
+                  defaultValue={this.props.minListingPrice}
                   formatter={value =>
-                    `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                   }
-                  onChange={this.handleChangeMinProfit}
+                  onChange={this.handleChangeMinListingPrice}
                 />
               </ModalSwitchItem>
+            )}
+            {this.props.autoPriceChanger && (
+              <>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    marginTop: 5
+                  }}
+                >
+                  <Text strong style={{ fontSize: '0.7rem' }}>
+                    Your minimum profit €{' '}
+                    {this.props.minListingCommission &&
+                      Math.round(
+                        ((this.props.minListingPrice -
+                          this.props.minListingCommission -
+                          this.props.additionalCosts) *
+                          100) /
+                          100
+                      ).toFixed(2)}
+                  </Text>
+                </div>
+              </>
             )}
             <ModalSwitchItem style={{ marginTop: 15 }}>
               <Text>Update stock</Text>
@@ -171,24 +218,47 @@ export default class PriceCheckerView extends React.Component {
               <InputNumber
                 defaultValue={this.props.priceUpdate}
                 formatter={value =>
-                  `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
                 onChange={this.handleUpdatePriceChange}
               />
             </ModalSwitchItem>
             <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Additional costs (Shipping / Packaging)</Text>
+              <Text>Additional costs (Shipping / Packaging / Product)</Text>
               <InputNumber
                 defaultValue={this.props.additionalCosts}
                 formatter={value =>
-                  `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
                 onChange={this.handleAdditionalCosts}
               />
             </ModalSwitchItem>
             <Divider />
             <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Bol.com commission incl. BTW</Text>
+              {this.props.commissionReduction && (
+                <Tag color="green">
+                  Reduction available until{' '}
+                  {this.props.commissionReduction.endDate}
+                </Tag>
+              )}
+              {this.props.commissionReduction && (
+                <div style={{ textAlign: 'right' }}>
+                  <Text>
+                    Lower price to €{' '}
+                    {this.props.commissionReduction.maximumPrice}
+                  </Text>
+                  <br />
+                  <Text strong style={{ fontSize: '0.7rem' }}>
+                    Bol.com commission: €{' '}
+                    {this.props.commissionReduction.costReduction}
+                  </Text>
+                </div>
+              )}
+            </ModalSwitchItem>
+
+            <Divider />
+            <ModalSwitchItem style={{ marginTop: 15 }}>
+              <Text>Bol.com commission</Text>
               <Text>€ {this.props.bolReceivePrice}</Text>
             </ModalSwitchItem>
             <ModalSwitchItem style={{ marginTop: 15 }}>
@@ -196,9 +266,9 @@ export default class PriceCheckerView extends React.Component {
               <Text>€ {this.props.additionalCosts}</Text>
             </ModalSwitchItem>
             <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text strong>Total received</Text>
+              <Text strong>Total profit</Text>
               <Text strong>
-                €{" "}
+                €{' '}
                 {Math.round(
                   ((this.props.priceUpdate -
                     this.props.bolReceivePrice -

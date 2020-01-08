@@ -1,24 +1,24 @@
-const fetch = require("node-fetch");
-const fs = require("fs");
-const csv = require("csvtojson");
+const fetch = require('node-fetch');
+const fs = require('fs');
+const csv = require('csvtojson');
 
 const getInventory = async token => {
-  const response = await fetch("https://api.bol.com/retailer/inventory", {
-    method: "GET",
+  const response = await fetch('https://api.bol.com/retailer/inventory', {
+    method: 'GET',
     headers: {
-      Accept: "application/vnd.retailer.v3+json",
+      Accept: 'application/vnd.retailer.v3+json',
       Authorization: token
     }
   });
   const data = await response.json();
-  return "hi";
+  return 'hi';
 };
 
 const getOffer = async (token, id) => {
   const response = await fetch(`https://api.bol.com/retailer/offers/${id}`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      Accept: "application/vnd.retailer.v3+json",
+      Accept: 'application/vnd.retailer.v3+json',
       Authorization: token
     }
   });
@@ -31,9 +31,9 @@ const getOffers = async (token, id, user) => {
   const response = await fetch(
     `https://api.bol.com/retailer/offers/export/${id}`,
     {
-      method: "GET",
+      method: 'GET',
       headers: {
-        Accept: "application/vnd.retailer.v3+csv",
+        Accept: 'application/vnd.retailer.v3+csv',
         Authorization: token
       }
     }
@@ -42,18 +42,6 @@ const getOffers = async (token, id, user) => {
   });
   const data = await response.text();
   return csv().fromString(data);
-};
-
-const slowCall = async (id, token) => {
-  return setTimeout(async () => {
-    return await fetch(`https://api.bol.com/retailer/process-status/${id}`, {
-      method: "GET",
-      headers: {
-        Accept: "application/vnd.retailer.v3+json",
-        Authorization: token
-      }
-    });
-  }, 1000);
 };
 
 const requestProcessStatus = async (id, token) => {
@@ -65,20 +53,20 @@ const requestProcessStatus = async (id, token) => {
     const entityIdResponse = await fetch(
       `https://api.bol.com/retailer/process-status/${id}`,
       {
-        method: "GET",
+        method: 'GET',
         headers: {
-          Accept: "application/vnd.retailer.v3+json",
+          Accept: 'application/vnd.retailer.v3+json',
           Authorization: token
         }
       }
     );
     const dataEntityId = await entityIdResponse.json();
-    if (dataEntityId.status === "SUCCESS") {
+    if (dataEntityId.status === 'SUCCESS') {
       success = true;
       const { entityId } = dataEntityId;
       return entityId;
     }
-    if (dataEntityId.status === "FAILURE") {
+    if (dataEntityId.status === 'FAILURE') {
       break;
     }
   }
@@ -86,14 +74,14 @@ const requestProcessStatus = async (id, token) => {
 };
 
 const requestOffersList = async token => {
-  const response = await fetch("https://api.bol.com/retailer/offers/export", {
-    method: "POST",
+  const response = await fetch('https://api.bol.com/retailer/offers/export', {
+    method: 'POST',
     headers: {
-      Accept: "application/vnd.retailer.v3+json",
-      "Content-Type": "application/vnd.retailer.v3+json",
+      Accept: 'application/vnd.retailer.v3+json',
+      'Content-Type': 'application/vnd.retailer.v3+json',
       Authorization: token
     },
-    body: JSON.stringify({ format: "CSV" })
+    body: JSON.stringify({ format: 'CSV' })
   });
   const data = await response.json();
   if (data.id) {
@@ -129,16 +117,16 @@ const createOffer = async (
       managedByRetailer: false
     },
     fulfilment: {
-      type: "FBR",
+      type: 'FBR',
       deliveryCode: fulfilment
     }
   };
-  const response = await fetch("https://api.bol.com/retailer/offers", {
-    method: "POST",
+  const response = await fetch('https://api.bol.com/retailer/offers', {
+    method: 'POST',
     headers: {
       Authorization: token,
-      Accept: "application/vnd.retailer.v3+json",
-      "Content-Type": "application/vnd.retailer.v3+json"
+      Accept: 'application/vnd.retailer.v3+json',
+      'Content-Type': 'application/vnd.retailer.v3+json'
     },
     body: JSON.stringify(body)
   });
@@ -154,11 +142,11 @@ const updatePrice = async (offerId, price, token) => {
   const response = await fetch(
     `https://api.bol.com/retailer/offers/${offerId}/price`,
     {
-      method: "PUT",
+      method: 'PUT',
       headers: {
         Authorization: token,
-        Accept: "application/vnd.retailer.v3+json",
-        "Content-Type": "application/vnd.retailer.v3+json"
+        Accept: 'application/vnd.retailer.v3+json',
+        'Content-Type': 'application/vnd.retailer.v3+json'
       },
       body: JSON.stringify({
         pricing: { bundlePrices: [{ quantity: 1, price }] }
@@ -175,11 +163,11 @@ const updateStock = async (offerId, amount, token) => {
   const response = await fetch(
     `https://api.bol.com/retailer/offers/${offerId}/stock`,
     {
-      method: "PUT",
+      method: 'PUT',
       headers: {
         Authorization: token,
-        Accept: "application/vnd.retailer.v3+json",
-        "Content-Type": "application/vnd.retailer.v3+json"
+        Accept: 'application/vnd.retailer.v3+json',
+        'Content-Type': 'application/vnd.retailer.v3+json'
       },
       body: JSON.stringify({
         amount,
@@ -194,18 +182,18 @@ const updateStock = async (offerId, amount, token) => {
 };
 
 const getCommission = async (ean, price, token) => {
-  const response = await fetch("https://api.bol.com/retailer/commission", {
-    method: "POST",
+  const response = await fetch('https://api.bol.com/retailer/commission', {
+    method: 'POST',
     headers: {
       Authorization: token,
-      Accept: "application/vnd.retailer.v3+json",
-      "Content-Type": "application/vnd.retailer.v3+json"
+      Accept: 'application/vnd.retailer.v3+json',
+      'Content-Type': 'application/vnd.retailer.v3+json'
     },
     body: JSON.stringify({
       commissionQueries: [
         {
           ean,
-          condition: "NEW",
+          condition: 'NEW',
           price
         }
       ]
