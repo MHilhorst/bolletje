@@ -8,12 +8,14 @@ const keys = require("./config/keys");
 const morgan = require("morgan");
 const compression = require("compression");
 const PriceMonitor = require("./services/productChecker");
+const OfferMonitor = require("./services/autoOfferChecker");
 const PORT = process.env.PORT || 5000;
 
 const app = express();
 const server = require("http").Server(app);
 
 PriceMonitor();
+OfferMonitor();
 
 const corsOptions = {
   optionsSuccessStatus: 200
