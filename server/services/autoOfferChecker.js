@@ -12,7 +12,7 @@ const monitor = () => {
       const offer = await getOffer(token, item.offer_id);
       const currentPrice = offer.pricing.bundlePrices[0];
       const otherOffers = await getOtherOffers(item.ean);
-      otherOffers.offerData;
+      console.log(otherOffers.offerData);
     });
   });
 };
