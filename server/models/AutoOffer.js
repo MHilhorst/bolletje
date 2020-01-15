@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const AutoOfferSchema = new Schema({
@@ -18,6 +18,9 @@ const AutoOfferSchema = new Schema({
   additional_costs: {
     type: Number
   },
+  price_change_amount: {
+    type: Number
+  },
   user_id: {
     type: String
   },
@@ -26,4 +29,4 @@ const AutoOfferSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('AutoOffer', AutoOfferSchema);
+module.exports = mongoose.model("AutoOffer", AutoOfferSchema);

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const OfferSchema = new Schema({
@@ -38,9 +38,13 @@ const OfferSchema = new Schema({
   created: {
     type: Date
   },
+  available: {
+    type: Boolean,
+    default: true
+  },
   last_update: {
     tupe: Date
   }
 });
 
-module.exports = mongoose.model('Offer', OfferSchema);
+module.exports = mongoose.model("Offer", OfferSchema);

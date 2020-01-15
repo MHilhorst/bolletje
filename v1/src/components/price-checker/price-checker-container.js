@@ -1,11 +1,11 @@
-import React from 'react';
-import PriceCheckerView from './price-checker-view';
+import React from "react";
+import PriceCheckerView from "./price-checker-view";
 import {
   reloadOffers,
   updateAutoOffer,
   getUserOwnOffers,
   getCommission
-} from '../../utils/bol';
+} from "../../utils/bol";
 
 const findSeller = (array, value) => {
   for (var i = 0; i < array.length; i += 1) {
@@ -34,7 +34,7 @@ export default class PriceCheckerContainer extends React.Component {
     const data = {
       autoOfferId
     };
-    if (typeof this.state.autoPriceChanger !== 'undefined')
+    if (typeof this.state.autoPriceChanger !== "undefined")
       data.autoTrack = this.state.autoPriceChanger;
     if (this.state.minProfit) data.minProfit = this.state.minProfit;
     if (this.state.minListingPrice)
@@ -43,6 +43,8 @@ export default class PriceCheckerContainer extends React.Component {
       data.additionalCosts = this.state.additionalCosts;
     if (this.state.priceUpdate) data.priceUpdate = this.state.priceUpdate;
     if (this.state.stockUpdate) data.stockUpdate = this.state.stockUpdate;
+    if (this.state.priceChangeAmount)
+      data.priceChangeAmount = this.state.priceChangeAmount;
     data.offerId = this.state.currentOfferId;
     updateAutoOffer(data);
   };
@@ -67,6 +69,7 @@ export default class PriceCheckerContainer extends React.Component {
         totalSellers: offer.offerData.offers.length,
         offerRank: currentRank,
         offerInfo: offer,
+        bestOffer: offer.offerData.offers[currentRank],
         liveTracking: offer.autoOffer.auto_track
       });
     });
@@ -132,14 +135,16 @@ export default class PriceCheckerContainer extends React.Component {
     }
   };
   render() {
-    return (
-      <PriceCheckerView
-        handleReloadOffers={this.handleReloadOffers}
-        onChange={this.onChange}
-        handleSubmit={this.handleSubmit}
-        handleCommission={this.handleCommission}
-        {...this.state}
-      />
-    );
+    if (this.state.offers && this.state.tableOffers) {
+      return (
+        <PriceCheckerView
+          handleReloadOffers={this.handleReloadOffers}
+          onChange={this.onChange}
+          handleSubmit={this.handleSubmit}
+          handleCommission={this.handleCommission}
+          {...this.state}
+        />
+      );
+    } else return null;
   }
 }

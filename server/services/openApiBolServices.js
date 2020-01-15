@@ -1,8 +1,8 @@
-const fetch = require('node-fetch');
-const keys = require('../config/keys');
-const ip = require('ip');
-const Product = require('../models/Product');
-const baseUrl = 'https://api.bol.com';
+const fetch = require("node-fetch");
+const keys = require("../config/keys");
+const ip = require("ip");
+const Product = require("../models/Product");
+const baseUrl = "https://api.bol.com";
 const apiKey = keys.bol.apiAcces;
 const queryApi = `?apikey=${apiKey}`;
 
@@ -10,7 +10,7 @@ const getOtherOffers = async ean => {
   const productId = await getProductIdWithEAN(ean);
   const response = await fetch(
     `${baseUrl}/catalog/v4/offers/${productId}${queryApi}&offers=all`,
-    { method: 'GET' }
+    { method: "GET" }
   );
   const data = await response.json();
   return data;
@@ -26,10 +26,10 @@ const getProductIdWithEAN = async ean => {
 
 const getSession = async () => {
   const response = await fetch(`${baseUrl}/accounts/v4/sessions${queryApi}`, {
-    method: 'GET'
+    method: "GET"
   });
   const data = await response.json();
-  return { 'X-OpenAPI-Session-ID': data.sessionId };
+  return { "X-OpenAPI-Session-ID": data.sessionId };
 };
 
 const getStock = async (publicOfferId, quantity) => {
@@ -37,22 +37,28 @@ const getStock = async (publicOfferId, quantity) => {
   const response = await fetch(
     `${baseUrl}/checkout/v4/baskets/${publicOfferId}/${quantity}/217.103.151.153/${queryApi}&format=json`,
     {
-      method: 'POST',
+      method: "POST",
       headers: {
         ...sessionHeader,
-        'Content-Type': 'application/x-www-form-urlencoded'
+        "Content-Type": "application/x-www-form-urlencoded"
       }
     }
   );
   const cartItemResponse = await fetch(
     `${baseUrl}/checkout/v4/baskets/${queryApi}`,
     {
-      method: 'GET',
+      method: "GET",
       headers: { ...sessionHeader }
     }
   );
   const data = await cartItemResponse.json();
-  return data.basketItems[0];
+  if (data.totalAmountArticles === 0) {
+    return false;
+  } else {
+    if (data.basketItems[0]) {
+      return data.basketItems[0];
+    }
+  }
 };
 
 const getPriceOneItem = async publicOfferId => {
@@ -60,17 +66,17 @@ const getPriceOneItem = async publicOfferId => {
   const response = await fetch(
     `${baseUrl}/checkout/v4/baskets/${publicOfferId}/${1}/217.103.151.153/${queryApi}&format=json`,
     {
-      method: 'POST',
+      method: "POST",
       headers: {
         ...sessionHeader,
-        'Content-Type': 'application/x-www-form-urlencoded'
+        "Content-Type": "application/x-www-form-urlencoded"
       }
     }
   );
   const cartItemResponse = await fetch(
     `${baseUrl}/checkout/v4/baskets/${queryApi}`,
     {
-      method: 'GET',
+      method: "GET",
       headers: { ...sessionHeader }
     }
   );
@@ -78,6 +84,15 @@ const getPriceOneItem = async publicOfferId => {
   return data.basketItems[0].price;
 };
 
+const updateProductOffers = async (id, product) => {
+  const response = await fetch(
+    `${baseUrl}/catalog/v4/products/${id}${queryApi}&offers=all`
+  );
+  const data = await response.json();
+  const { ean, title, rating, urls, images, offerData } = data.products[0];
+  product.offer_ids.push(offerData.offers);
+  product.last_offer_check = Date.now();
+};
 const saveProduct = async id => {
   const productExist = await Product.findOne({
     product_id: id.toString()
@@ -133,3 +148,4 @@ module.exports.getStock = getStock;
 module.exports.getProductIdWithEAN = getProductIdWithEAN;
 module.exports.saveProduct = saveProduct;
 module.exports.getPriceOneItem = getPriceOneItem;
+module.exports.updateProductOffers = updateProductOffers;
