@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
@@ -30,7 +30,11 @@ const ProductSchema = new Schema({
   tracking_since: {
     type: Date,
     default: Date.now()
+  },
+  last_offer_check: {
+    type: Date,
+    default: Date.now()
   }
 });
 
-module.exports = mongoose.model('Product', ProductSchema);
+module.exports = mongoose.model("Product", ProductSchema);

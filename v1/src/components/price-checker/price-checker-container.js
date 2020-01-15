@@ -1,11 +1,11 @@
-import React from 'react';
-import PriceCheckerView from './price-checker-view';
+import React from "react";
+import PriceCheckerView from "./price-checker-view";
 import {
   reloadOffers,
   updateAutoOffer,
   getUserOwnOffers,
   getCommission
-} from '../../utils/bol';
+} from "../../utils/bol";
 
 const findSeller = (array, value) => {
   for (var i = 0; i < array.length; i += 1) {
@@ -34,7 +34,7 @@ export default class PriceCheckerContainer extends React.Component {
     const data = {
       autoOfferId
     };
-    if (typeof this.state.autoPriceChanger !== 'undefined')
+    if (typeof this.state.autoPriceChanger !== "undefined")
       data.autoTrack = this.state.autoPriceChanger;
     if (this.state.minProfit) data.minProfit = this.state.minProfit;
     if (this.state.minListingPrice)
@@ -43,6 +43,8 @@ export default class PriceCheckerContainer extends React.Component {
       data.additionalCosts = this.state.additionalCosts;
     if (this.state.priceUpdate) data.priceUpdate = this.state.priceUpdate;
     if (this.state.stockUpdate) data.stockUpdate = this.state.stockUpdate;
+    if (this.state.priceChangeAmount)
+      data.priceChangeAmount = this.state.priceChangeAmount;
     data.offerId = this.state.currentOfferId;
     updateAutoOffer(data);
   };
@@ -52,6 +54,7 @@ export default class PriceCheckerContainer extends React.Component {
     let offerKey = 0;
     const offers = await getUserOwnOffers();
     offers.result.map(offer => {
+<<<<<<< HEAD
       if (!offer.offerData.hasOwnProperty('offers')) {
       } else {
         const currentRank = findSeller(
@@ -71,6 +74,26 @@ export default class PriceCheckerContainer extends React.Component {
           liveTracking: offer.autoOffer.auto_track
         });
       }
+=======
+      console.log(offer);
+      const currentRank = findSeller(
+        offer.offerData.offers,
+        this.props.user.bol_shop_name
+      );
+      offerKey += 1;
+      offerTableSchema.push({
+        key: offerKey,
+        productName: offer.store.productTitle,
+        ean: offer.ean,
+        currentPrice: offer.pricing.bundlePrices[0].price,
+        currentStock: offer.stock.amount,
+        totalSellers: offer.offerData.offers.length,
+        offerRank: currentRank,
+        offerInfo: offer,
+        bestOffer: offer.offerData.offers[currentRank],
+        liveTracking: offer.autoOffer.auto_track
+      });
+>>>>>>> 2028deee9d9e758ff12bf431f88ad4ca9590fdb3
     });
     if (offers.result.length >= 1) {
       this.setState({
@@ -134,14 +157,16 @@ export default class PriceCheckerContainer extends React.Component {
     }
   };
   render() {
-    return (
-      <PriceCheckerView
-        handleReloadOffers={this.handleReloadOffers}
-        onChange={this.onChange}
-        handleSubmit={this.handleSubmit}
-        handleCommission={this.handleCommission}
-        {...this.state}
-      />
-    );
+    if (this.state.offers && this.state.tableOffers) {
+      return (
+        <PriceCheckerView
+          handleReloadOffers={this.handleReloadOffers}
+          onChange={this.onChange}
+          handleSubmit={this.handleSubmit}
+          handleCommission={this.handleCommission}
+          {...this.state}
+        />
+      );
+    } else return null;
   }
 }

@@ -1,5 +1,9 @@
 const fetch = require("node-fetch");
-const { getStock, getPriceOneItem } = require("./openApiBolServices");
+const {
+  getStock,
+  getPriceOneItem,
+  updateProductOffers
+} = require("./openApiBolServices");
 const Offer = require("../models/Offer");
 const Product = require("../models/Product");
 
@@ -40,12 +44,13 @@ const analyzeStock = async (offerId, offer, priceOneUnit) => {
       price: priceOneUnit
     };
     offerDoc.updates.push(newOfferInfo);
-    if (sold > 0) {
+    if (sold > 0 && sold < 10) {
       offerDoc.total_sold = (offerDoc.total_sold || 0) + sold;
       productDoc.total_sold = (productDoc.total_sold || 0) + sold;
     }
     offerDoc.quantity = offer.quantity;
     offerDoc.price = priceOneUnit;
+    // offerDoc.available = offerItem.availabilityCode === "-1" ? false : true;
     offerDoc.save();
     productDoc.save();
   } else {
@@ -74,13 +79,22 @@ const monitor = async () => {
   setInterval(async () => {
     const products = await getProductsToMonitor();
     products.map(async product => {
+      const oldDate = new Date(product.last_offer_check);
+      const newDate = new Date();
+      const difference = (newDate.getTime() - oldDate.getTime()) / 1000;
+      if (difference > 100) {
+        updateProductOffers(product.product_id, product);
+      }
       product.offer_ids.map(async offerItem => {
         const offer = await getStock(offerItem.id, 500);
-        const priceOneUnit = await getPriceOneItem(offerItem.id);
-        analyzeStock(offerItem.id, offer, priceOneUnit);
+        if (!offer) {
+        } else {
+          const priceOneUnit = await getPriceOneItem(offerItem.id);
+          analyzeStock(offerItem.id, offer, priceOneUnit);
+        }
       });
     });
-  }, 3600000);
+  }, 360000);
 };
 
 module.exports = monitor;
