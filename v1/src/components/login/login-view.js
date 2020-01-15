@@ -12,7 +12,6 @@ import Cookies from 'js-cookie';
 import config from '../../config';
 
 const { Title, Text } = Typography;
-const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 class LoginView extends React.Component {
   constructor(props) {
     super(props);
@@ -52,9 +51,7 @@ class LoginView extends React.Component {
         if (data.token) {
           const { token } = data;
           Cookies.set('token', token, { expires: 1 });
-          setTimeout(() => {
-            this.props.history.push('/');
-          }, 2000);
+          this.props.history.push('/');
         }
         if (data.error) {
           this.setState({ loading: false, errorLogin: true });

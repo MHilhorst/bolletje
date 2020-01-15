@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-class RouteWrapper extends React.Component {
+class LoginWrapper extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -15,18 +15,14 @@ class RouteWrapper extends React.Component {
         render={props => {
           if (this.props.user) {
             return (
-              <Layout {...this.props} {...props}>
-                <Component {...this.props} {...props} />
-              </Layout>
-            );
-          } else {
-            return (
               <Redirect
                 to={{
-                  pathname: '/login'
+                  pathname: '/'
                 }}
               />
             );
+          } else {
+            return <Component {...this.props} {...props} />;
           }
         }}
       />
@@ -34,4 +30,4 @@ class RouteWrapper extends React.Component {
   }
 }
 
-export default RouteWrapper;
+export default LoginWrapper;

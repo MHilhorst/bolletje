@@ -52,23 +52,25 @@ export default class PriceCheckerContainer extends React.Component {
     let offerKey = 0;
     const offers = await getUserOwnOffers();
     offers.result.map(offer => {
-      console.log(offer);
-      const currentRank = findSeller(
-        offer.offerData.offers,
-        this.props.user.bol_shop_name
-      );
-      offerKey += 1;
-      offerTableSchema.push({
-        key: offerKey,
-        productName: offer.store.productTitle,
-        ean: offer.ean,
-        currentPrice: offer.pricing.bundlePrices[0].price,
-        currentStock: offer.stock.amount,
-        totalSellers: offer.offerData.offers.length,
-        offerRank: currentRank,
-        offerInfo: offer,
-        liveTracking: offer.autoOffer.auto_track
-      });
+      if (!offer.offerData.hasOwnProperty('offers')) {
+      } else {
+        const currentRank = findSeller(
+          offer.offerData.offers,
+          this.props.user.bol_shop_name
+        );
+        offerKey += 1;
+        offerTableSchema.push({
+          key: offerKey,
+          productName: offer.store.productTitle,
+          ean: offer.ean,
+          currentPrice: offer.pricing.bundlePrices[0].price,
+          currentStock: offer.stock.amount,
+          totalSellers: offer.offerData.offers.length,
+          offerRank: currentRank,
+          offerInfo: offer,
+          liveTracking: offer.autoOffer.auto_track
+        });
+      }
     });
     if (offers.result.length >= 1) {
       this.setState({
