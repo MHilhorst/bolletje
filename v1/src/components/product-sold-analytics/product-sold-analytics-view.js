@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box } from '../../styles/style';
-import { Input, Button, Table } from 'antd';
+import { Input, Button, Table, Tooltip, Icon, Typography } from 'antd';
 import { getTrackedProducts } from '../../utils/bol';
-
+const { Text } = Typography;
 const columns = [
   {
     title: 'Product Image',
@@ -38,9 +38,40 @@ const columns = [
     key: 'totalSellers'
   },
   {
-    title: 'Average Sold / Day',
+    title: (
+      <Tooltip placement="top" title={'This is an estimated'}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Icon type="info-circle" width={12} style={{ marginRight: 5 }} />
+          <span>Average Sold / Day</span>
+        </div>
+      </Tooltip>
+    ),
     dataIndex: 'avgSoldDay',
     key: 'avgSoldDay'
+  },
+  {
+    title: (
+      <Tooltip placement="top" title={'This is an estimated'}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Icon type="info-circle" width={12} style={{ marginRight: 5 }} />
+          <span>Monthly sales</span>
+        </div>
+      </Tooltip>
+    ),
+    key: 'monthlySales',
+    dataIndex: 'monthlySales'
+  },
+  {
+    title: (
+      <Tooltip placement="top" title={'This is an estimated'}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Icon type="info-circle" width={12} style={{ marginRight: 5 }} />
+          <span>Monthly Revenue</span>
+        </div>
+      </Tooltip>
+    ),
+    key: 'monthlyRevenue',
+    dataIndex: 'monthlyRevenue'
   },
   {
     title: 'View',
@@ -78,15 +109,53 @@ const getLowestPrice = offer_ids => {
 const setTableData = async products => {
   const productsTableScheme = [];
   products.map(product => {
+    console.log(product);
     const tableProductEntry = {
       productImage: product.img,
       productName: product.title,
       ean: product.ean,
       totalSellers: product.offer_ids.length,
+      monthlySales:
+        Math.round(
+          product.total_sold /
+            Math.round(
+              (new Date().getTime() -
+                new Date(product.tracking_since).getTime()) /
+                1000 /
+                86400
+            )
+        ) * 30,
+      monthlyRevenue:
+        '€ ' +
+        Math.round(
+          product.total_sold /
+            Math.round(
+              (new Date().getTime() -
+                new Date(product.tracking_since).getTime()) /
+                1000 /
+                86400
+            )
+        ) *
+          30 *
+          (product.offer_ids.length > 0
+            ? getLowestPrice(product.offer_ids)
+            : 0),
       trackingSince: getFormattedDate(new Date(product.tracking_since)),
-      lowestPrice: getLowestPrice(product.offer_ids),
+      lowestPrice:
+        product.offer_ids.length > 0
+          ? getLowestPrice(product.offer_ids)
+          : 'Not available',
       view: product.product_id,
-      avgSoldDay: product.total_sold || 0
+      avgSoldDay:
+        Math.round(
+          product.total_sold /
+            Math.round(
+              (new Date().getTime() -
+                new Date(product.tracking_since).getTime()) /
+                1000 /
+                86400
+            )
+        ) || 0
     };
     productsTableScheme.push(tableProductEntry);
   });

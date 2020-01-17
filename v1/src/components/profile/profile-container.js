@@ -1,5 +1,5 @@
-import React from "react";
-import ProfileView from "./profile-view";
+import React from 'react';
+import ProfileView from './profile-view';
 
 export default class ProfileContainer extends React.Component {
   constructor(props) {
@@ -7,6 +7,6 @@ export default class ProfileContainer extends React.Component {
     this.state = {};
   }
   render() {
-    return <ProfileView />;
+    return <ProfileView {...this.props} />;
   }
 }

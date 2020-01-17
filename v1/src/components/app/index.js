@@ -8,6 +8,7 @@ import Login from '../login';
 import Loading from '../loading';
 import PriceChecker from '../price-checker';
 import Profile from '../profile';
+import ProductManagement from '../product-management';
 import ProductSoldAnalytics from '../product-sold-analytics';
 import ProductSoldAnalyticsDetailed from '../product-sold-analytics-detailed';
 import Cookies from 'js-cookie';
@@ -80,6 +81,13 @@ class App extends React.Component {
             <RouteWrapper
               path="/product-sold-analytics/:id"
               component={ProductSoldAnalyticsDetailed}
+              layout={BaseLayout}
+              user={this.state.user}
+              {...this.props}
+            />
+            <RouteWrapper
+              path="/product-management/:id"
+              component={ProductManagement}
               layout={BaseLayout}
               user={this.state.user}
               {...this.props}

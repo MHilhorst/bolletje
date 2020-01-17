@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   XYPlot,
   XAxis,
@@ -7,9 +7,9 @@ import {
   LineMarkSeries,
   makeVisFlexible,
   Hint
-} from "react-vis";
-import { Descriptions, Badge } from "antd";
-import PropTypes from "prop-types";
+} from 'react-vis';
+import { Descriptions, Badge } from 'antd';
+import PropTypes from 'prop-types';
 
 const Plot = ({
   width,
@@ -35,10 +35,10 @@ const Plot = ({
       <LineMarkSeries
         data={measurements}
         style={{
-          strokeWidth: "2px"
+          strokeWidth: '2px'
         }}
-        lineStyle={{ stroke: "#1890ff" }}
-        markStyle={{ stroke: "rgba(255, 255, 255)", fill: "#1890ff" }}
+        lineStyle={{ stroke: '#1890ff' }}
+        markStyle={{ stroke: 'rgba(255, 255, 255)', fill: '#1890ff' }}
         onNearestX={setHint}
       />
       {value ? <Hint value={value} /> : null}
@@ -97,7 +97,7 @@ export default class OfferView extends React.Component {
         const hh = date.getHours();
         const dd = date.getDate();
         const mm = date.getMonth() + 1; //January is 0!
-        const today = dd + "/" + mm + " " + hh + ":00";
+        const today = dd + '/' + mm + ' ' + hh + ':00';
         stock.push({ y: update.quantity, x: today });
         price.push({ y: update.price, x: today });
       }
@@ -109,7 +109,6 @@ export default class OfferView extends React.Component {
   };
   render() {
     if (this.state.stock) {
-      console.log(this.props.offer);
       return (
         <>
           <Descriptions
