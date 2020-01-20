@@ -1,11 +1,11 @@
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
 const {
   getStock,
   getPriceOneItem,
   updateProductOffers
-} = require('./openApiBolServices');
-const Offer = require('../models/Offer');
-const Product = require('../models/Product');
+} = require("./openApiBolServices");
+const Offer = require("../models/Offer");
+const Product = require("../models/Product");
 
 const saveOffer = async (offerId, offerInfo) => {
   const offerExist = await Offer.findOne({ public_offer_id: offerId }).exec();
@@ -77,7 +77,7 @@ const getProductsToMonitor = async () => {
 
 const monitor = async () => {
   setInterval(async () => {
-    console.log('monitoring');
+    console.log("monitoring");
     const products = await getProductsToMonitor();
     products.map(async product => {
       const oldDate = new Date(product.last_offer_check);
@@ -93,8 +93,10 @@ const monitor = async () => {
           if (!offer) {
           } else {
             saveOffer(offerItem.id, offer).then(async () => {
-              const priceOneUnit = await getPriceOneItem(offerItem.id);
-              analyzeStock(offerItem.id, offer, priceOneUnit);
+              try {
+                const priceOneUnit = await getPriceOneItem(offerItem.id);
+                analyzeStock(offerItem.id, offer, priceOneUnit);
+              } catch {}
             });
           }
         });
@@ -103,13 +105,15 @@ const monitor = async () => {
           const offer = await getStock(offerItem.id, 500);
           if (!offer) {
           } else {
-            const priceOneUnit = await getPriceOneItem(offerItem.id);
-            analyzeStock(offerItem.id, offer, priceOneUnit);
+            try {
+              const priceOneUnit = await getPriceOneItem(offerItem.id);
+              analyzeStock(offerItem.id, offer, priceOneUnit);
+            } catch {}
           }
         });
       }
     });
-  }, 1000000);
+  }, 4000000);
 };
 
 module.exports = monitor;

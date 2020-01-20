@@ -28,6 +28,9 @@ const UserSchema = new Schema({
   bol_shop_name: {
     type: String
   },
+  bol_shop_id: {
+    type: String
+  },
   last_update_access_token: {
     type: Date
   },

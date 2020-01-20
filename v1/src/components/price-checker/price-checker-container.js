@@ -1,11 +1,11 @@
-import React from 'react';
-import PriceCheckerView from './price-checker-view';
+import React from "react";
+import PriceCheckerView from "./price-checker-view";
 import {
   reloadOffers,
   updateAutoOffer,
   getUserOwnOffers,
   getCommission
-} from '../../utils/bol';
+} from "../../utils/bol";
 
 const findSeller = (array, value) => {
   for (var i = 0; i < array.length; i += 1) {
@@ -34,7 +34,7 @@ export default class PriceCheckerContainer extends React.Component {
     const data = {
       autoOfferId
     };
-    if (typeof this.state.autoPriceChanger !== 'undefined')
+    if (typeof this.state.autoPriceChanger !== "undefined")
       data.autoTrack = this.state.autoPriceChanger;
     if (this.state.minProfit) data.minProfit = this.state.minProfit;
     if (this.state.minListingPrice)
@@ -55,25 +55,27 @@ export default class PriceCheckerContainer extends React.Component {
     let offerKey = 0;
     const offers = await getUserOwnOffers();
     offers.result.map(offer => {
-      if (!offer.offerData.hasOwnProperty('offers')) {
-      } else {
-        const currentRank = findSeller(
-          offer.offerData.offers,
-          this.props.user.bol_shop_name
-        );
-        offerKey += 1;
-        offerTableSchema.push({
-          key: offerKey,
-          productName: offer.store.productTitle,
-          ean: offer.ean,
-          currentPrice: offer.pricing.bundlePrices[0].price,
-          currentStock: offer.stock.amount,
-          totalSellers: offer.offerData.offers.length,
-          offerRank: currentRank,
-          offerInfo: offer,
-          liveTracking: offer.autoOffer.auto_track
-        });
-      }
+      try {
+        if (!offer.offerData.hasOwnProperty("offers")) {
+        } else {
+          const currentRank = findSeller(
+            offer.offerData.offers,
+            this.props.user.bol_shop_name
+          );
+          offerKey += 1;
+          offerTableSchema.push({
+            key: offerKey,
+            productName: offer.store.productTitle,
+            ean: offer.ean,
+            currentPrice: offer.pricing.bundlePrices[0].price,
+            currentStock: offer.stock.amount,
+            totalSellers: offer.offerData.offers.length,
+            offerRank: currentRank,
+            offerInfo: offer,
+            liveTracking: offer.autoOffer.auto_track
+          });
+        }
+      } catch {}
     });
     if (offers.result.length >= 1) {
       this.setState({
@@ -89,7 +91,9 @@ export default class PriceCheckerContainer extends React.Component {
       this.setState({
         bolReceivePrice: commission.totalCost,
         bolCommissionPercentage: commission.percentage,
-        commissionReduction: commission.reductions[0]
+        commissionReduction: commission.hasOwnProperty("reductions")
+          ? commission.reductions[0]
+          : false
       });
     } else {
       const commission = await getCommission(ean, price);

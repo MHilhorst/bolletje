@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box } from '../../styles/style';
+import React from "react";
+import { Box } from "../../styles/style";
 import {
   Layout,
   Col,
@@ -9,7 +9,7 @@ import {
   Descriptions,
   Button,
   Divider
-} from 'antd';
+} from "antd";
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 export default class ProfileView extends React.Component {
@@ -32,12 +32,12 @@ export default class ProfileView extends React.Component {
               <TabPane key="1" tab="Profile">
                 <div
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
+                    display: "flex",
+                    justifyContent: "space-between",
                     marginTop: 10
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: "flex", alignItems: "center" }}>
                     <Avatar size={64} icon="user" />
                     <div style={{ marginLeft: 10 }}>
                       <Text strong>{this.props.user._id}</Text>
@@ -56,8 +56,8 @@ export default class ProfileView extends React.Component {
               <TabPane key="2" tab="Billing">
                 <div
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
+                    display: "flex",
+                    justifyContent: "space-between",
                     marginTop: 10
                   }}
                 >
@@ -65,7 +65,7 @@ export default class ProfileView extends React.Component {
                 </div>
               </TabPane>
               <TabPane key="3" tab="Security">
-                asdad
+                <Text strong>Password</Text>
               </TabPane>
             </Tabs>
           </Box>

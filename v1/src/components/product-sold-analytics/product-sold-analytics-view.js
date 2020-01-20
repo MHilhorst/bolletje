@@ -1,81 +1,87 @@
-import React from 'react';
-import { Box } from '../../styles/style';
-import { Input, Button, Table, Tooltip, Icon, Typography } from 'antd';
-import { getTrackedProducts } from '../../utils/bol';
+import React from "react";
+import { Box } from "../../styles/style";
+import { Input, Button, Table, Tooltip, Icon, Typography } from "antd";
+import { getTrackedProducts } from "../../utils/bol";
 const { Text } = Typography;
 const columns = [
   {
-    title: 'Product Image',
-    dataIndex: 'productImage',
-    key: 'productImage',
+    title: "Product Image",
+    dataIndex: "productImage",
+    key: "productImage",
     render: (value, record) => {
       return <img src={value} width={50} height={50} />;
     }
   },
   {
-    title: 'Product Name',
-    dataIndex: 'productName',
-    key: 'productName'
+    title: "Product Name",
+    dataIndex: "productName",
+    key: "productName",
+    render: (value, record) => {
+      return <a href={record.url}>{value}</a>;
+    }
   },
   {
-    title: 'EAN',
-    dataIndex: 'ean',
-    key: 'ean'
+    title: "EAN",
+    dataIndex: "ean",
+    key: "ean"
   },
   {
-    title: 'Lowest Price',
-    dataIndex: 'lowestPrice',
-    key: 'lowestPrice'
+    title: "Lowest Price",
+    dataIndex: "lowestPrice",
+    key: "lowestPrice",
+    render: value => {
+      return <span>€ {value}</span>;
+    }
   },
   {
-    title: 'Tracking Since',
-    dataIndex: 'trackingSince',
-    key: 'trackingSince'
+    title: "Tracking Since",
+    dataIndex: "trackingSince",
+    key: "trackingSince"
   },
   {
-    title: 'Total sellers',
-    dataIndex: 'totalSellers',
-    key: 'totalSellers'
+    title: "Total sellers",
+    dataIndex: "totalSellers",
+    key: "totalSellers"
   },
   {
     title: (
-      <Tooltip placement="top" title={'This is an estimated'}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Tooltip placement="top" title={"This is an estimated"}>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <Icon type="info-circle" width={12} style={{ marginRight: 5 }} />
           <span>Average Sold / Day</span>
         </div>
       </Tooltip>
     ),
-    dataIndex: 'avgSoldDay',
-    key: 'avgSoldDay'
+    dataIndex: "avgSoldDay",
+    key: "avgSoldDay"
   },
   {
     title: (
-      <Tooltip placement="top" title={'This is an estimated'}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Tooltip placement="top" title={"This is an estimated"}>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <Icon type="info-circle" width={12} style={{ marginRight: 5 }} />
           <span>Monthly sales</span>
         </div>
       </Tooltip>
     ),
-    key: 'monthlySales',
-    dataIndex: 'monthlySales'
+    key: "monthlySales",
+    dataIndex: "monthlySales"
   },
   {
     title: (
-      <Tooltip placement="top" title={'This is an estimated'}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Tooltip placement="top" title={"This is an estimated"}>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <Icon type="info-circle" width={12} style={{ marginRight: 5 }} />
           <span>Monthly Revenue</span>
         </div>
       </Tooltip>
     ),
-    key: 'monthlyRevenue',
-    dataIndex: 'monthlyRevenue'
+    key: "monthlyRevenue",
+    dataIndex: "monthlyRevenue"
   },
   {
-    title: 'View',
-    key: 'view',
+    title: "View",
+    key: "view",
     render: value => {
       return (
         <span>
@@ -87,13 +93,13 @@ const columns = [
 ];
 const getFormattedDate = date => {
   let year = date.getFullYear();
-  let month = (1 + date.getMonth()).toString().padStart(2, '0');
+  let month = (1 + date.getMonth()).toString().padStart(2, "0");
   let day = date
     .getDate()
     .toString()
-    .padStart(2, '0');
+    .padStart(2, "0");
 
-  return month + '/' + day + '/' + year;
+  return month + "/" + day + "/" + year;
 };
 
 const getLowestPrice = offer_ids => {
@@ -111,6 +117,7 @@ const setTableData = async products => {
   products.map(product => {
     console.log(product);
     const tableProductEntry = {
+      url: product.url,
       productImage: product.img,
       productName: product.title,
       ean: product.ean,
@@ -126,7 +133,7 @@ const setTableData = async products => {
             )
         ) * 30,
       monthlyRevenue:
-        '€ ' +
+        "€ " +
         Math.round(
           product.total_sold /
             Math.round(
@@ -144,7 +151,7 @@ const setTableData = async products => {
       lowestPrice:
         product.offer_ids.length > 0
           ? getLowestPrice(product.offer_ids)
-          : 'Not available',
+          : "Not available",
       view: product.product_id,
       avgSoldDay:
         Math.round(
