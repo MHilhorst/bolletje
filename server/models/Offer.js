@@ -17,6 +17,9 @@ const OfferSchema = new Schema({
   seller_display_name: {
     type: String
   },
+  seller: {
+    type: Object
+  },
   product_id: {
     type: String
   },

@@ -1,8 +1,11 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const AutoOfferSchema = new Schema({
+const BolOfferSchema = new Schema({
   offer_id: {
+    type: String
+  },
+  product_name: {
     type: String
   },
   auto_track: {
@@ -26,7 +29,19 @@ const AutoOfferSchema = new Schema({
   },
   ean: {
     type: String
+  },
+  active: {
+    type: Boolean,
+    default: true
+  },
+  total_sold: {
+    type: Number,
+    default: 0
+  },
+  linked_to_inventory_item: {
+    type: Boolean,
+    default: false
   }
 });
 
-module.exports = mongoose.model("AutoOffer", AutoOfferSchema);
+module.exports = mongoose.model('BolOffer', BolOfferSchema);

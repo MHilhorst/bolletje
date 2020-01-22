@@ -91,10 +91,15 @@ const updateProductOffers = async (id, product) => {
     `${baseUrl}/catalog/v4/products/${id}${queryApi}&offers=all`
   );
   const data = await response.json();
-  const { offerData } = data.products[0];
-  product.offer_ids = offerData.offers || [];
-  product.last_offer_check = Date.now();
-  return product.save();
+  try {
+    const { offerData } = data.products[0];
+    product.offer_ids = offerData.offers || [];
+    product.last_offer_check = Date.now();
+
+    return product.save();
+  } catch {
+    return false;
+  }
 };
 
 const saveProduct = async id => {

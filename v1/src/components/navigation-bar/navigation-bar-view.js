@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Icon, Drawer, Button, Dropdown, Menu, Typography } from 'antd';
+import { Avatar, Dropdown, Menu, Typography } from 'antd';
 import Cookies from 'js-cookie';
 const { Text } = Typography;
 class NavigationBarView extends React.Component {
@@ -10,12 +10,14 @@ class NavigationBarView extends React.Component {
     };
   }
   logout = () => {
+    console.log('logging out');
     Cookies.remove('token');
+    window.location.reload();
   };
   menu = (
     <Menu>
       <Menu.Item key="0">
-        <a target="_blank" href="http://www.alipay.com/">
+        <a href="/profile">
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Avatar size={32} icon="user" />
             <div style={{ marginLeft: 10 }}>
@@ -31,22 +33,14 @@ class NavigationBarView extends React.Component {
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key="1">
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="http://www.taobao.com/"
-        >
+        <a rel="noopener noreferrer" href="/profile">
           Account
         </a>
       </Menu.Item>
       <Menu.Item key="1">
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="http://www.taobao.com/"
-        >
+        <span target="_blank" rel="noopener noreferrer" onClick={this.logout}>
           Log Out
-        </a>
+        </span>
       </Menu.Item>
     </Menu>
   );

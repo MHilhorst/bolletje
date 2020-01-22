@@ -6,7 +6,6 @@ import {
   Modal,
   Tag,
   Switch,
-  Slider,
   Typography,
   Divider,
   InputNumber
@@ -15,22 +14,6 @@ import { getAutoOfferInfo } from '../../utils/bol';
 const { Text } = Typography;
 
 const WAIT_INTERVAL = 1000;
-const ENTER_KEY = 13;
-
-// {this.props.autoPriceChanger && (
-//   <>
-//     {/* <Slider defaultValue={10} tooltipVisible /> */}
-//     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-//       <Text strong style={{ fontSize: '0.7rem' }}>
-//         Minimum Price on Bol.com{' '}
-//         {(this.props.bolCommissionPercentage / 100) *
-//           this.props.priceUpdate +
-//           this.props.additionalCosts +
-//           this.props.minProfit}
-//       </Text>
-//     </div>
-//   </>
-// )}
 
 export default class PriceCheckerView extends React.Component {
   constructor(props) {
@@ -86,9 +69,9 @@ export default class PriceCheckerView extends React.Component {
         key: 'configure',
         render: value => (
           <span>
-            <a onClick={() => this.handleModal(value)}>Configure</a>
+            <span onClick={() => this.handleModal(value)}>Configure</span>
             <br />
-            <a
+            <span
               onClick={() =>
                 this.props.history.push(
                   `/product-management/${value.offerInfo.autoOffer._id}`
@@ -96,7 +79,7 @@ export default class PriceCheckerView extends React.Component {
               }
             >
               View
-            </a>
+            </span>
           </span>
         )
       }

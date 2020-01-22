@@ -122,6 +122,15 @@ export const getAutoOfferInfo = async autoOfferId => {
   const data = await response.json();
   return data;
 };
+export const getBolOfferInfo = async bolOfferId => {
+  const jwt = Cookies.get('token');
+  const response = await fetch(`${config.host}/api/track/offer/${bolOfferId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt }
+  });
+  const data = await response.json();
+  return data;
+};
 
 export const getUserOwnOffers = async () => {
   const jwt = Cookies.get('token');
@@ -142,4 +151,33 @@ export const getCommission = async (ean, price) => {
   });
   const data = await response.json();
   return data;
+};
+
+export const getBolOpenOrders = async () => {
+  const jwt = Cookies.get('token');
+  const response = await fetch(`${config.host}/api/order`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt }
+  });
+  const data = await response.json();
+  return data;
+};
+
+export const getBolOffers = async () => {
+  const jwt = Cookies.get('token');
+  const response = await fetch(`${config.host}/api/bol/v2/offers`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt }
+  });
+  const data = await response.json();
+  return data;
+};
+
+export const findSeller = (array, value) => {
+  for (var i = 0; i < array.length; i += 1) {
+    if (array[i].seller.displayName === value.bol_shop_name) {
+      return i;
+    }
+  }
+  return -1;
 };

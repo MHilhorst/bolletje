@@ -1,10 +1,16 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch } from 'react-router-dom';
 import RouteWrapper from './route-wrapper';
 import LoginWrapper from './login-wrapper';
 import Dashboard from '../dashboard';
+import InventoryOverview from '../inventory-overview';
+import Orders from '../orders';
+import InventoryItemDetailed from '../inventory-item-detailed';
 import BaseLayout from '../../layouts/base-layout';
+import OrderDetailed from '../order-detailed';
+import PluginAliExpress from '../plugin-aliexpress';
 import Login from '../login';
+import CreateInventoryItem from '../create-inventory-item';
 import Loading from '../loading';
 import PriceChecker from '../price-checker';
 import Profile from '../profile';
@@ -48,7 +54,7 @@ class App extends React.Component {
           <Switch>
             <RouteWrapper
               exact
-              path="/"
+              path="/dashboard"
               component={Dashboard}
               layout={BaseLayout}
               user={this.state.user}
@@ -91,11 +97,59 @@ class App extends React.Component {
               layout={BaseLayout}
               user={this.state.user}
               {...this.props}
+            />{' '}
+            <RouteWrapper
+              exact
+              path="/inventory-overview"
+              component={InventoryOverview}
+              layout={BaseLayout}
+              user={this.state.user}
+              {...this.props}
+            />
+            <RouteWrapper
+              exact
+              path="/inventory/:id"
+              component={InventoryItemDetailed}
+              layout={BaseLayout}
+              user={this.state.user}
+              {...this.props}
+            />
+            <RouteWrapper
+              exact
+              path="/inventory-overview/create"
+              component={CreateInventoryItem}
+              layout={BaseLayout}
+              user={this.state.user}
+              {...this.props}
             />
             <RouteWrapper
               exact
               path="/price-checker"
               component={PriceChecker}
+              layout={BaseLayout}
+              user={this.state.user}
+              {...this.props}
+            />
+            <RouteWrapper
+              exact
+              path="/orders"
+              component={Orders}
+              layout={BaseLayout}
+              user={this.state.user}
+              {...this.props}
+            />
+            <RouteWrapper
+              exact
+              path="/order/:id"
+              component={OrderDetailed}
+              layout={BaseLayout}
+              user={this.state.user}
+              {...this.props}
+            />
+            <RouteWrapper
+              exact
+              path="/plugin/aliexpress"
+              component={PluginAliExpress}
               layout={BaseLayout}
               user={this.state.user}
               {...this.props}

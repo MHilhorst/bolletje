@@ -1,13 +1,12 @@
-import React from "react";
-import { Box, ModalSwitchItem } from "../../styles/style";
-import Offer from "./offer/offer-view";
+import React from 'react';
+import { Box, ModalSwitchItem } from '../../styles/style';
+import Offer from './offer/offer-view';
 import {
   Descriptions,
   Badge,
   Button,
   Modal,
   Typography,
-  Switch,
   InputNumber,
   Divider,
   Tag,
@@ -18,19 +17,21 @@ import {
   Drawer,
   Comment,
   Avatar,
-  Tooltip
-} from "antd";
+  Tooltip,
+  Select
+} from 'antd';
 const { Text } = Typography;
+const { Option } = Select;
 const { Search } = Input;
 const getFormattedDate = date => {
   let year = date.getFullYear();
-  let month = (1 + date.getMonth()).toString().padStart(2, "0");
+  let month = (1 + date.getMonth()).toString().padStart(2, '0');
   let day = date
     .getDate()
     .toString()
-    .padStart(2, "0");
+    .padStart(2, '0');
 
-  return month + "/" + day + "/" + year;
+  return month + '/' + day + '/' + year;
 };
 
 const getLowestPrice = offer_ids => {
@@ -48,28 +49,32 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      drawerSuggestions: false
+      drawerSuggestions: false,
+      graphType: 'stepline'
     };
     this.timer = null;
   }
   handleChangeBolPrice = value => {
-    this.props.onChange("bolPrice", value);
+    this.props.onChange('bolPrice', value);
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       this.props.handleCommission(this.props.product.ean, value);
     }, WAIT_INTERVAL);
   };
   handleChangePackagingCosts = value => {
-    this.props.onChange("packagingCosts", value);
+    this.props.onChange('packagingCosts', value);
   };
   handleChangeProductCosts = value => {
-    this.props.onChange("productCosts", value);
+    this.props.onChange('productCosts', value);
   };
   showPriceSuggestions = () => {
     this.setState({ drawerSuggestions: true });
   };
   handleClosePriceSuggestion = () => {
     this.setState({ drawerSuggestions: false });
+  };
+  handleChangeGraphType = v => {
+    this.setState({ graphType: v });
   };
   handleOk = () => {
     this.setState({ visible: false });
@@ -81,7 +86,6 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
     this.handleChangeBolPrice(this.props.offers[0].price);
   }
   render() {
-    console.log(this.props.product);
     return (
       <>
         <Box>
@@ -114,18 +118,28 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
                   new Date(this.props.product.tracking_since).getTime()) /
                   1000 /
                   3600
-              ) + " Hours"}
+              ) + ' Hours'}
             </Descriptions.Item>
             <Descriptions.Item label="Tracking Status" span={1}>
               <Badge status="processing" text="Tracking" />
             </Descriptions.Item>
             <Descriptions.Item label="Price suggestion" span={2}>
-              <a onClick={this.showPriceSuggestions}>48.43</a>
+              <span onClick={this.showPriceSuggestions}>48.43</span>
             </Descriptions.Item>
-            <Descriptions.Item label="Calculate Profit" span={3}>
+            <Descriptions.Item label="Calculate Profit" span={1}>
               <Button onClick={() => this.setState({ visible: true })}>
                 Calculate Profit
               </Button>
+            </Descriptions.Item>
+            <Descriptions.Item label="Chart Type" span={2}>
+              <Select
+                defaultValue="stepline"
+                onChange={this.handleChangeGraphType}
+              >
+                <Option value="smooth">Smooth</Option>
+                <Option value="straight">Straight</Option>
+                <Option value="stepline">Stepline</Option>
+              </Select>
             </Descriptions.Item>
           </Descriptions>
         </Box>
@@ -179,22 +193,24 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
               <Statistic
                 title="Estimated Monthly Revenue"
                 value={
-                  "€ " +
-                  Math.round(
-                    this.props.product.total_sold /
-                      Math.round(
-                        (new Date().getTime() -
-                          new Date(
-                            this.props.product.tracking_since
-                          ).getTime()) /
-                          1000 /
-                          86400
-                      )
-                  ) *
+                  '€ ' +
+                  (
+                    Math.round(
+                      this.props.product.total_sold /
+                        Math.round(
+                          (new Date().getTime() -
+                            new Date(
+                              this.props.product.tracking_since
+                            ).getTime()) /
+                            1000 /
+                            86400
+                        )
+                    ) *
                     30 *
                     (this.props.product.offer_ids.length > 0
                       ? getLowestPrice(this.props.product.offer_ids)
                       : 0)
+                  ).toFixed(2)
                 }
               />
             </Box>
@@ -203,7 +219,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
         {this.props.offers.map(offer => {
           return (
             <Box>
-              <Offer offer={offer} />
+              <Offer offer={offer} graphType={this.state.graphType} />
             </Box>
           );
         })}
@@ -218,7 +234,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             <InputNumber
               defaultValue={this.props.bolPrice}
               formatter={value =>
-                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
               onChange={this.handleChangeBolPrice}
             />
@@ -228,7 +244,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             <InputNumber
               defaultValue={this.props.packagingCosts}
               formatter={value =>
-                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
               onChange={this.handleChangePackagingCosts}
             />
@@ -238,27 +254,26 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             <InputNumber
               defaultValue={this.props.packagingCosts}
               formatter={value =>
-                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
               onChange={this.handleChangeProductCosts}
             />
           </ModalSwitchItem>
-          <Divider />
           <ModalSwitchItem style={{ marginTop: 15 }}>
             {this.props.commissionReduction && (
               <Tag color="green">
-                Reduction available until{" "}
+                Reduction available until{' '}
                 {this.props.commissionReduction.endDate}
               </Tag>
             )}
             {this.props.commissionReduction && (
-              <div style={{ textAlign: "right" }}>
+              <div style={{ textAlign: 'right' }}>
                 <Text>
                   Lower price to € {this.props.commissionReduction.maximumPrice}
                 </Text>
                 <br />
-                <Text strong style={{ fontSize: "0.7rem" }}>
-                  Bol.com commission: €{" "}
+                <Text strong style={{ fontSize: '0.7rem' }}>
+                  Bol.com commission: €{' '}
                   {this.props.commissionReduction.costReduction}
                 </Text>
               </div>
@@ -312,7 +327,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
                   this.props.productCosts) /
                   this.props.bolPrice) *
                 100
-              ).toFixed(2)}{" "}
+              ).toFixed(2)}{' '}
               %
             </Text>
           </ModalSwitchItem>
@@ -327,13 +342,13 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
         >
           <div
             style={{
-              display: "flex",
-              flexDirection: "column"
+              display: 'flex',
+              flexDirection: 'column'
             }}
           >
             <div>
               <Comment
-                author={<a>Han Solo</a>}
+                author={<span>Han Solo</span>}
                 avatar={
                   <Avatar
                     src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
@@ -355,7 +370,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
                 }
               />
               <Comment
-                author={<a>Han Solo</a>}
+                author={<span>asd</span>}
                 avatar={
                   <Avatar
                     src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
@@ -378,10 +393,10 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
           </div>
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               bottom: 0,
               right: 0,
-              width: "100%",
+              width: '100%',
               padding: 20
             }}
           >
@@ -389,7 +404,6 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
               placeholder="input search text"
               enterButton="Send"
               size="large"
-              onSearch={value => console.log(value)}
             />
           </div>
         </Drawer>

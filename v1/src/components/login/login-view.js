@@ -1,12 +1,11 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
-import { Form, Spin, Input, Icon, Button, Typography, Col, Layout } from 'antd';
+import { Input, Icon, Button, Typography } from 'antd';
 import {
   LoginBox,
   LoginContainerBox,
   LoginHeader,
-  LoginInput,
-  subText
+  LoginInput
 } from '../../styles/style';
 import Cookies from 'js-cookie';
 import config from '../../config';
@@ -19,7 +18,8 @@ class LoginView extends React.Component {
       email: '',
       password: '',
       loading: false,
-      errorLogin: false
+      errorLogin: false,
+      redirect: false
     };
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
@@ -51,7 +51,7 @@ class LoginView extends React.Component {
         if (data.token) {
           const { token } = data;
           Cookies.set('token', token, { expires: 1 });
-          this.props.history.push('/');
+          this.setState({ redirect: true });
         }
         if (data.error) {
           this.setState({ loading: false, errorLogin: true });
@@ -62,6 +62,9 @@ class LoginView extends React.Component {
       });
   };
   render() {
+    if (this.state.redirect) {
+      return <Redirect to="/dashboard" />;
+    }
     return (
       <LoginContainerBox>
         <LoginBox>
@@ -98,10 +101,10 @@ class LoginView extends React.Component {
                   onChange={this.handlePasswordChange}
                   style={{ marginBottom: 5 }}
                 />
-                <subText>
+                <Text>
                   Forgot your password? Click{' '}
                   <a href="/docs/spec/proximity">here.</a>
-                </subText>
+                </Text>
               </LoginInput>
               <div
                 style={{
@@ -132,9 +135,9 @@ class LoginView extends React.Component {
                     marginTop: 10
                   }}
                 >
-                  <subText>
+                  <Text>
                     Or <a href="/register">create</a> an account
-                  </subText>
+                  </Text>
                 </div>
               </div>
             </div>

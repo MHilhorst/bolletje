@@ -181,6 +181,27 @@ const updateStock = async (offerId, amount, token) => {
   }
 };
 
+const updateAvailability = async (offerId, onHold, token) => {
+  const response = await fetch(
+    `https://api.bol.com/retailer/offers/${offerId}/stock`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: token,
+        Accept: 'application/vnd.retailer.v3+json',
+        'Content-Type': 'application/vnd.retailer.v3+json'
+      },
+      body: JSON.stringify({
+        onHoldByRetailer: onHold
+      })
+    }
+  );
+  const data = await response.json();
+  if (data.id) {
+    return await requestProcessStatus(data.id, token);
+  }
+};
+
 const getCommission = async (ean, price, token) => {
   const response = await fetch('https://api.bol.com/retailer/commission', {
     method: 'POST',
@@ -202,6 +223,38 @@ const getCommission = async (ean, price, token) => {
   const data = await response.json();
   return data.commissions[0];
 };
+const getOpenOrders = async token => {
+  const response = await fetch(
+    'https://api.bol.com/retailer-demo/orders?fulfilment-method=FBR',
+    {
+      method: 'GET',
+      headers: {
+        Authorization: token,
+        Accept: 'application/vnd.retailer.v3+json',
+        'Content-Type': 'application/vnd.retailer.v3+json'
+      }
+    }
+  );
+  const data = await response.json();
+  return data;
+};
+
+const getDetailedOrder = async (orderId, token) => {
+  const response = await fetch(
+    `https://api.bol.com/retailer-demo/orders/${orderId}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: token,
+        Accept: 'application/vnd.retailer.v3+json',
+        'Content-Type': 'application/vnd.retailer.v3+json'
+      }
+    }
+  );
+  const data = await response.json();
+  return data;
+};
+
 module.exports.getInventory = getInventory;
 module.exports.createOffer = createOffer;
 module.exports.getOffer = getOffer;
@@ -211,3 +264,6 @@ module.exports.requestProcessStatus = requestProcessStatus;
 module.exports.updatePrice = updatePrice;
 module.exports.updateStock = updateStock;
 module.exports.getCommission = getCommission;
+module.exports.getOpenOrders = getOpenOrders;
+module.exports.updateAvailability = updateAvailability;
+module.exports.getDetailedOrder = getDetailedOrder;

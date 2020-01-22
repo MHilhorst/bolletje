@@ -5,8 +5,8 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const keys = require('../config/keys');
 const jwtAuth = require('express-jwt');
-const AutoOffer = require('../models/AutoOffer');
-
+const BolOffer = require('../models/BolOffer');
+const InventoryItem = require('../models/InventoryItem');
 const secret = keys.secretJWT;
 
 router.post('/register', (req, res) => {
@@ -103,8 +103,16 @@ router.post('/logout', jwtAuth({ secret }), (req, res) => {
 router.get('/offer/:id', jwtAuth({ secret }), async (req, res) => {
   if (req.user) {
     const user = await User.findById(req.user._id).exec();
-    const userOffer = await AutoOffer.findById(req.params.id).exec();
+    const userOffer = await BolOffer.findById(req.params.id).exec();
     if (req.user._id === userOffer.user_id) return res.json({ userOffer });
+  }
+});
+router.get('/inventory/:id', jwtAuth({ secret }), async (req, res) => {
+  if (req.user) {
+    const user = await User.findById(req.user._id).exec();
+    const inventoryOffer = await InventoryItem.findById(req.params.id).exec();
+    if (req.user._id === inventoryOffer.user_id)
+      return res.json({ ...inventoryOffer._doc });
   }
 });
 

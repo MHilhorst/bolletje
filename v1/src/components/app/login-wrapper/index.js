@@ -7,8 +7,6 @@ class LoginWrapper extends React.Component {
   }
   render() {
     const { component: Component, ...rest } = this.props;
-    const { layout: Layout } = this.props;
-    const { loaded } = this.state;
     return (
       <Route
         {...rest}
@@ -17,7 +15,7 @@ class LoginWrapper extends React.Component {
             return (
               <Redirect
                 to={{
-                  pathname: '/'
+                  pathname: '/dashboard'
                 }}
               />
             );

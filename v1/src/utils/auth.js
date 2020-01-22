@@ -32,3 +32,13 @@ export const checkOffer = async offer => {
   const data = await response.json();
   return data;
 };
+
+export const checkInventoryItem = async id => {
+  const jwt = Cookies.get('token');
+  const response = await fetch(`${config.host}/api/auth/inventory/${id}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: jwt }
+  });
+  const data = await response.json();
+  return { ...data };
+};

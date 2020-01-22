@@ -1,17 +1,15 @@
 const User = require('../models/User');
-const AutoOffer = require('../models/AutoOffer');
+const BolOffer = require('../models/BolOffer');
 const { getToken } = require('../services/accessToken');
 const { updatePrice } = require('../services/bolServices');
 const { getOtherOffers } = require('../services/openApiBolServices');
 
 const monitor = () => {
-  AutoOffer.find({ auto_track: true }, (err, doc) => {
+  BolOffer.find({ auto_track: true }, (err, doc) => {
     if (err) console.log(err);
     doc.map(async item => {
       const user = await User.findById(item.user_id).exec();
       const token = await getToken(user._id);
-      // const offer = await getOffer(token, item.offer_id);
-      // const currentPrice = offer.pricing.bundlePrices[0];
       const otherOffers = await getOtherOffers(item.ean);
       if (!otherOffers.offerData.hasOwnProperty('offers')) {
         console.log('error no offers');

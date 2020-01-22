@@ -1,15 +1,15 @@
-import React from "react";
-import CreateOfferView from "./create-offer-view";
-import { createOffer, getOffer } from "../../utils/bol";
+import React from 'react';
+import CreateOfferView from './create-offer-view';
+import { createOffer } from '../../utils/bol';
 export default class CreateOfferContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      ean: "",
-      condition: "NEW",
+      ean: '',
+      condition: 'NEW',
       price: 0,
       stockAmount: 0,
-      fulfilment: "24uurs-23",
+      fulfilment: '24uurs-23',
       loadingPostOffer: false,
       postOfferError: null,
       postOfferSuccess: null

@@ -1,11 +1,11 @@
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 const {
   getStock,
   getPriceOneItem,
   updateProductOffers
-} = require("./openApiBolServices");
-const Offer = require("../models/Offer");
-const Product = require("../models/Product");
+} = require('./openApiBolServices');
+const Offer = require('../models/Offer');
+const Product = require('../models/Product');
 
 const saveOffer = async (offerId, offerInfo) => {
   const offerExist = await Offer.findOne({ public_offer_id: offerId }).exec();
@@ -17,6 +17,7 @@ const saveOffer = async (offerId, offerInfo) => {
       quantity: offerInfo.quantity,
       seller_id: offerInfo.seller.id,
       seller_display_name: offerInfo.seller.displayName,
+      seller: offerInfo.seller,
       product_id: offerInfo.product.id,
       product_ean: offerInfo.product.ean,
       product_title: offerInfo.product.title,
@@ -50,7 +51,6 @@ const analyzeStock = async (offerId, offer, priceOneUnit) => {
     }
     offerDoc.quantity = offer.quantity;
     offerDoc.price = priceOneUnit;
-    // offerDoc.available = offerItem.availabilityCode === "-1" ? false : true;
     offerDoc.save();
     productDoc.save();
   } else {
@@ -77,7 +77,7 @@ const getProductsToMonitor = async () => {
 
 const monitor = async () => {
   setInterval(async () => {
-    console.log("monitoring");
+    console.log('monitoring');
     const products = await getProductsToMonitor();
     products.map(async product => {
       const oldDate = new Date(product.last_offer_check);
@@ -88,18 +88,20 @@ const monitor = async () => {
           product.product_id,
           product
         );
-        productNew.offer_ids.map(async offerItem => {
-          const offer = await getStock(offerItem.id, 500);
-          if (!offer) {
-          } else {
-            saveOffer(offerItem.id, offer).then(async () => {
-              try {
-                const priceOneUnit = await getPriceOneItem(offerItem.id);
-                analyzeStock(offerItem.id, offer, priceOneUnit);
-              } catch {}
-            });
-          }
-        });
+        if (productNew) {
+          productNew.offer_ids.map(async offerItem => {
+            const offer = await getStock(offerItem.id, 500);
+            if (!offer) {
+            } else {
+              saveOffer(offerItem.id, offer).then(async () => {
+                try {
+                  const priceOneUnit = await getPriceOneItem(offerItem.id);
+                  analyzeStock(offerItem.id, offer, priceOneUnit);
+                } catch {}
+              });
+            }
+          });
+        }
       } else {
         product.offer_ids.map(async offerItem => {
           const offer = await getStock(offerItem.id, 500);

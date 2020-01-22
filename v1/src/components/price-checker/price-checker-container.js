@@ -1,20 +1,13 @@
-import React from "react";
-import PriceCheckerView from "./price-checker-view";
+import React from 'react';
+import PriceCheckerView from './price-checker-view';
 import {
   reloadOffers,
   updateAutoOffer,
   getUserOwnOffers,
   getCommission
-} from "../../utils/bol";
+} from '../../utils/bol';
 
-const findSeller = (array, value) => {
-  for (var i = 0; i < array.length; i += 1) {
-    if (array[i].seller.displayName === value) {
-      return i;
-    }
-  }
-  return -1;
-};
+import { findSeller } from '../../utils/bol';
 
 export default class PriceCheckerContainer extends React.Component {
   constructor(props) {
@@ -30,11 +23,11 @@ export default class PriceCheckerContainer extends React.Component {
     this.setState({ [key]: value });
   };
 
-  handleSubmit = async autoOfferId => {
+  handleSubmit = async bolOfferId => {
     const data = {
-      autoOfferId
+      bolOfferId
     };
-    if (typeof this.state.autoPriceChanger !== "undefined")
+    if (typeof this.state.autoPriceChanger !== 'undefined')
       data.autoTrack = this.state.autoPriceChanger;
     if (this.state.minProfit) data.minProfit = this.state.minProfit;
     if (this.state.minListingPrice)
@@ -56,7 +49,7 @@ export default class PriceCheckerContainer extends React.Component {
     const offers = await getUserOwnOffers();
     offers.result.map(offer => {
       try {
-        if (!offer.offerData.hasOwnProperty("offers")) {
+        if (!offer.offerData.hasOwnProperty('offers')) {
         } else {
           const currentRank = findSeller(
             offer.offerData.offers,
@@ -91,7 +84,7 @@ export default class PriceCheckerContainer extends React.Component {
       this.setState({
         bolReceivePrice: commission.totalCost,
         bolCommissionPercentage: commission.percentage,
-        commissionReduction: commission.hasOwnProperty("reductions")
+        commissionReduction: commission.hasOwnProperty('reductions')
           ? commission.reductions[0]
           : false
       });
@@ -109,7 +102,6 @@ export default class PriceCheckerContainer extends React.Component {
       const offerTableSchema = [];
       let offerKey = 0;
       offers.result.map(offer => {
-        console.log(offer);
         const currentRank = findSeller(
           offer.offerData.offers,
           this.props.user.bol_shop_name
@@ -132,11 +124,6 @@ export default class PriceCheckerContainer extends React.Component {
           tableOffers: offerTableSchema,
           loadingOffers: false
         });
-        // localStorage.setItem("offers", JSON.stringify(this.state.offers));
-        // localStorage.setItem(
-        //   "tableOffers",
-        //   JSON.stringify(this.state.tableOffers)
-        // );
       }
     }
   };

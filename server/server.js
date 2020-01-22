@@ -52,4 +52,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/bol', require('./routes/bol'));
 app.use('/api/track', require('./routes/track'));
+app.use('/api/order', require('./routes/order'));
+app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/plugin/aliexpress', require('./routes/plugin-aliexpress'));
 server.listen(8000, () => {});

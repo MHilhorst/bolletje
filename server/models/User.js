@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -37,7 +37,11 @@ const UserSchema = new Schema({
   access_token: { type: String },
   own_offers: {
     type: Array
+  },
+  plugins: {
+    type: Array,
+    default: []
   }
 });
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model('User', UserSchema);
