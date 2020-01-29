@@ -1,16 +1,16 @@
-import React from 'react';
-import BolItemView from './bol-item-view';
+import React from "react";
+import BolItemView from "./bol-item-view";
 import {
   getCommission,
   updateAutoOffer,
   getBolOffers,
   findSeller
-} from '../../../utils/bol';
+} from "../../../utils/bol";
 import {
   deleteBolOfferOfInventoryItem,
   setBolOfferOfInventoryItem,
   getBolOfferOfInventoryItem
-} from '../../../utils/inventory';
+} from "../../../utils/inventory";
 
 const getBuyBox = async (offers, user) => {
   const ownOfferIndex = offers.findIndex(offer => {
@@ -40,10 +40,11 @@ export default class BolItemContainer extends React.Component {
         data.result.offerData.offers,
         this.props.user
       );
-      const buyBox = await getBuyBox(
-        data.result.offerData.offers,
-        this.props.user
-      );
+      let buyBox;
+      try {
+        buyBox = await getBuyBox(data.result.offerData.offers, this.props.user);
+      } catch {}
+
       tableData.push({
         key: 1,
         productName: data.result.store.productTitle,
@@ -53,7 +54,7 @@ export default class BolItemContainer extends React.Component {
         totalSellers: data.result.offerData.offers.length,
         offerRank: currentRank,
         offerInfo: data.result,
-        buyBox: buyBox,
+        buyBox: buyBox || "",
         liveTracking: data.result.bolOffer.auto_track
       });
       this.setState({
@@ -75,7 +76,7 @@ export default class BolItemContainer extends React.Component {
       this.setState({
         bolReceivePrice: commission.totalCost,
         bolCommissionPercentage: commission.percentage,
-        commissionReduction: commission.hasOwnProperty('reductions')
+        commissionReduction: commission.hasOwnProperty("reductions")
           ? commission.reductions[0]
           : false
       });
@@ -94,7 +95,7 @@ export default class BolItemContainer extends React.Component {
     const data = {
       bolOfferId
     };
-    if (typeof this.state.autoPriceChanger !== 'undefined')
+    if (typeof this.state.autoPriceChanger !== "undefined")
       data.autoTrack = this.state.autoPriceChanger;
     if (this.state.minProfit) data.minProfit = this.state.minProfit;
     if (this.state.minListingPrice)
