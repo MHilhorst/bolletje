@@ -1,6 +1,8 @@
-import React from 'react';
-import { Row, Col, Table } from 'antd';
-import { Box } from '../../styles/style';
+import React from "react";
+import { Row, Col, Table, Typography } from "antd";
+import { Box } from "../../styles/style";
+
+const { Text } = Typography;
 
 export default class PluginAliExpressView extends React.Component {
   constructor(props) {
@@ -8,16 +10,16 @@ export default class PluginAliExpressView extends React.Component {
     this.state = {};
     this.columns = [
       {
-        title: 'Product Image',
-        dataIndex: 'productImage',
-        key: 'productImage',
+        title: "Product Image",
+        dataIndex: "productImage",
+        key: "productImage",
         render: value => <img src={value} width={150} />
       },
-      { title: 'Product Name', dataIndex: 'productName', key: 'productName' },
+      { title: "Product Name", dataIndex: "productName", key: "productName" },
       {
-        title: 'Product Price',
-        dataIndex: 'productPrice',
-        key: 'productPrice',
+        title: "Product Price",
+        dataIndex: "productPrice",
+        key: "productPrice",
         render: value => {
           return <span>{(value.sale * 0.9).toFixed(2)}</span>;
         }
@@ -28,9 +30,24 @@ export default class PluginAliExpressView extends React.Component {
   render() {
     return (
       <>
-        <Box>
-          <Table dataSource={this.props.tableData} columns={this.columns} />
-        </Box>
+        {this.props.products.map(product => {
+          console.log(product);
+          return (
+            <Box>
+              <div style={{ display: "flex" }}>
+                <img src={product.imageUrl} style={{ height: 150 }} />
+                <div style={{ marginLeft: 15 }}>
+                  <Text strong style={{ fontSize: 16 }}>
+                    {product.name}
+                  </Text>
+                  <br />
+                  <Text>sdasd</Text>
+                </div>
+              </div>
+            </Box>
+          );
+        })}
+        {/* <Table dataSource={this.props.tableData} columns={this.columns} /> */}
 
         {/* <Row gutter={16}>
           {this.props.products.map(product => {
