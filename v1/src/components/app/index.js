@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import RouteWrapper from './route-wrapper';
 import LoginWrapper from './login-wrapper';
 import Dashboard from '../dashboard';
@@ -40,7 +40,6 @@ class App extends React.Component {
     })
       .then(res => res.json())
       .then(data => {
-        console.log(data.user);
         this.setState({ user: data.user, loading: false });
       })
       .catch(err => {
@@ -162,7 +161,7 @@ class App extends React.Component {
               user={this.state.user}
               {...this.props}
             />
-            <LoginWrapper
+            <Route
               exact
               path="/login"
               component={Login}

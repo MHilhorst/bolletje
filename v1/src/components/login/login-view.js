@@ -33,9 +33,38 @@ class LoginView extends React.Component {
     this.setState({ password: e.target.value });
   };
 
-  handleSubmit = () => {
+  // handleSubmit = () => {
+  //   this.setState({ loading: true, errorLogin: false });
+  //   fetch(`${config.host}/api/auth/login`, {
+  //     method: 'POST',
+  //     headers: {
+  //       Accept: 'application/json',
+  //       'Content-Type': 'application/json'
+  //     },
+  //     body: JSON.stringify({
+  //       email: this.state.email,
+  //       password: this.state.password
+  //     })
+  //   })
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       if (data.token) {
+  //         const { token } = data;
+  //         Cookies.set('token', token, { expires: 1 });
+  //         this.props.history.push('/dashboard');
+  //       }
+  //       if (data.error) {
+  //         this.setState({ loading: false, errorLogin: true });
+  //       }
+  //     })
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  // };
+
+  handleSubmit = async () => {
     this.setState({ loading: true, errorLogin: false });
-    fetch(`${config.host}/api/auth/login`, {
+    const response = await fetch(`${config.host}/api/auth/login`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -45,26 +74,15 @@ class LoginView extends React.Component {
         email: this.state.email,
         password: this.state.password
       })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.token) {
-          const { token } = data;
-          Cookies.set('token', token, { expires: 1 });
-          this.setState({ redirect: true });
-        }
-        if (data.error) {
-          this.setState({ loading: false, errorLogin: true });
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    });
+    const data = await response.json();
+    if (data.token) {
+      const { token } = data;
+      Cookies.set('token', token, { expires: 1 });
+      this.props.history.push('/dashboard');
+    }
   };
   render() {
-    if (this.state.redirect) {
-      return <Redirect to="/dashboard" />;
-    }
     return (
       <LoginContainerBox>
         <LoginBox>
@@ -122,7 +140,7 @@ class LoginView extends React.Component {
                   type="primary"
                   htmlType="submit"
                   className="login-form-button"
-                  onClick={this.handleSubmit}
+                  onClick={() => this.handleSubmit()}
                   style={{ width: '100%' }}
                   loading={this.state.loading}
                 >
