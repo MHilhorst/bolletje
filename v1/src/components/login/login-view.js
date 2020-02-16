@@ -1,22 +1,22 @@
-import React from 'react';
-import { Redirect } from 'react-router-dom';
-import { Input, Icon, Button, Typography } from 'antd';
+import React from "react";
+import { Redirect } from "react-router-dom";
+import { Input, Icon, Button, Typography } from "antd";
 import {
   LoginBox,
   LoginContainerBox,
   LoginHeader,
   LoginInput
-} from '../../styles/style';
-import Cookies from 'js-cookie';
-import config from '../../config';
+} from "../../styles/style";
+import Cookies from "js-cookie";
+import config from "../../config";
 
 const { Title, Text } = Typography;
 class LoginView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
       loading: false,
       errorLogin: false,
       redirect: false
@@ -65,10 +65,10 @@ class LoginView extends React.Component {
   handleSubmit = async () => {
     this.setState({ loading: true, errorLogin: false });
     const response = await fetch(`${config.host}/api/auth/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         email: this.state.email,
@@ -78,8 +78,8 @@ class LoginView extends React.Component {
     const data = await response.json();
     if (data.token) {
       const { token } = data;
-      Cookies.set('token', token, { expires: 1 });
-      this.props.history.push('/dashboard');
+      Cookies.set("token", token, { expires: 1 });
+      this.props.history.push("/dashboard");
     }
   };
   render() {
@@ -87,23 +87,23 @@ class LoginView extends React.Component {
       <LoginContainerBox>
         <LoginBox>
           <LoginHeader>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: "center" }}>
               <Title level={4}>Login to Account</Title>
               <Text>Please enter your email and password to continue</Text>
             </div>
           </LoginHeader>
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'center',
+              display: "flex",
+              justifyContent: "center",
               marginTop: 20
             }}
           >
-            <div style={{ width: '80%  ' }}>
+            <div style={{ width: "80%  " }}>
               <LoginInput>
                 <Input
                   prefix={
-                    <Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />
+                    <Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />
                   }
                   placeholder="Username"
                   onChange={this.handleEmailChange}
@@ -112,7 +112,7 @@ class LoginView extends React.Component {
               <LoginInput>
                 <Input
                   prefix={
-                    <Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />
+                    <Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />
                   }
                   type="password"
                   placeholder="Password"
@@ -120,7 +120,7 @@ class LoginView extends React.Component {
                   style={{ marginBottom: 5 }}
                 />
                 <Text>
-                  Forgot your password? Click{' '}
+                  Forgot your password? Click{" "}
                   <a href="/docs/spec/proximity">here.</a>
                 </Text>
               </LoginInput>
@@ -128,7 +128,7 @@ class LoginView extends React.Component {
                 style={{
                   marginTop: 20,
                   marginBottom: 40,
-                  textAlign: 'center'
+                  textAlign: "center"
                 }}
               >
                 {this.state.errorLogin && (
@@ -141,15 +141,15 @@ class LoginView extends React.Component {
                   htmlType="submit"
                   className="login-form-button"
                   onClick={() => this.handleSubmit()}
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                   loading={this.state.loading}
                 >
                   Log in
                 </Button>
                 <div
                   style={{
-                    display: 'flex',
-                    justifyContent: 'center',
+                    display: "flex",
+                    justifyContent: "center",
                     marginTop: 10
                   }}
                 >

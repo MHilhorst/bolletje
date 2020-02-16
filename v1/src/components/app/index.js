@@ -1,27 +1,26 @@
-import React from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import RouteWrapper from './route-wrapper';
-import LoginWrapper from './login-wrapper';
-import Dashboard from '../dashboard';
-import InventoryOverview from '../inventory-overview';
-import Orders from '../orders';
-import InventoryItemDetailed from '../inventory-item-detailed';
-import BaseLayout from '../../layouts/base-layout';
-import OrderDetailed from '../order-detailed';
-import PluginAliExpress from '../plugin-aliexpress';
-import Login from '../login';
-import CreateInventoryItem from '../create-inventory-item';
-import Loading from '../loading';
-import PriceChecker from '../price-checker';
-import Profile from '../profile';
-import ProductManagement from '../product-management';
-import ProductSoldAnalytics from '../product-sold-analytics';
-import ProductSoldAnalyticsDetailed from '../product-sold-analytics-detailed';
-import Cookies from 'js-cookie';
-import config from '../../config';
-import SearchAnalytics from '../search-analytics';
-import CreateOffer from '../create-offer';
-const jwt = Cookies.get('token');
+import React from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import RouteWrapper from "./route-wrapper";
+import Dashboard from "../dashboard";
+import InventoryOverview from "../inventory-overview";
+import Orders from "../orders";
+import InventoryItemDetailed from "../inventory-item-detailed";
+import BaseLayout from "../../layouts/base-layout";
+import OrderDetailed from "../order-detailed";
+import PluginAliExpress from "../plugin-aliexpress";
+import Login from "../login";
+import CreateInventoryItem from "../create-inventory-item";
+import Loading from "../loading";
+import PriceChecker from "../price-checker";
+import Profile from "../profile";
+import ProductManagement from "../product-management";
+import ProductSoldAnalytics from "../product-sold-analytics";
+import ProductSoldAnalyticsDetailed from "../product-sold-analytics-detailed";
+import Cookies from "js-cookie";
+import config from "../../config";
+import SearchAnalytics from "../search-analytics";
+import CreateOffer from "../create-offer";
+const jwt = Cookies.get("token");
 
 class App extends React.Component {
   constructor(props) {
@@ -33,7 +32,7 @@ class App extends React.Component {
   }
   componentDidMount() {
     fetch(`${config.host}/api/user`, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Authorization: jwt
       }
@@ -96,7 +95,7 @@ class App extends React.Component {
               layout={BaseLayout}
               user={this.state.user}
               {...this.props}
-            />{' '}
+            />{" "}
             <RouteWrapper
               exact
               path="/inventory-overview"

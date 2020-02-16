@@ -23,7 +23,7 @@ export default class ProductSoldAnalyticsContainer extends React.Component {
     this.setState({ products });
   }
   render() {
-    if (this.state.products.length >= 1) {
+    if (this.state.products.length >= 0) {
       return (
         <ProductSoldAnalyticsView
           handleTrackNewProduct={this.handleTrackNewProduct}

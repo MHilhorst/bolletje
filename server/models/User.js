@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -41,7 +41,15 @@ const UserSchema = new Schema({
   plugins: {
     type: Array,
     default: []
+  },
+  bol_track_items: {
+    type: Array,
+    default: []
+  },
+  max_track_items: {
+    type: Number,
+    default: 2
   }
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model("User", UserSchema);

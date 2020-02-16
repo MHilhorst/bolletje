@@ -77,7 +77,6 @@ const getProductsToMonitor = async () => {
 
 const monitor = async () => {
   setInterval(async () => {
-    console.log("monitoring");
     const products = await getProductsToMonitor();
     products.map(async product => {
       const oldDate = new Date(product.last_offer_check);
