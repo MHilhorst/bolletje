@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '../../styles/style';
 import { Input, Button, Table, Tooltip, Icon, Typography } from 'antd';
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const columns = [
   {
     title: 'Product Image',
@@ -183,7 +183,8 @@ export default class ProductSoldAnalyticsView extends React.Component {
         <>
           <Box>
             <Title level={4} style={{ fontSize: 18 }}>
-              Analyze New Product
+              Analyze New Product {this.props.products.length}/
+              {this.props.user.max_track_items}
             </Title>
             <Input
               onChange={this.props.handleProductId}

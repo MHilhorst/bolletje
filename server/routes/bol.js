@@ -1,28 +1,28 @@
-const express = require("express");
-const User = require("../models/User");
-const keys = require("../config/keys");
-const BolOffer = require("../models/BolOffer");
-const jwtAuth = require("express-jwt");
-const { getToken } = require("../services/accessToken");
+const express = require('express');
+const User = require('../models/User');
+const keys = require('../config/keys');
+const BolOffer = require('../models/BolOffer');
+const jwtAuth = require('express-jwt');
+const { getToken } = require('../services/accessToken');
 const {
   createOffer,
   getOffer,
   getOffers,
   requestOffersList,
   getOpenOrders
-} = require("../services/bolServices");
+} = require('../services/bolServices');
 const {
   getOtherOffers,
   saveProduct
-} = require("../services/openApiBolServices");
-const { trackNewOffer } = require("../services/productChecker");
-const Offer = require("../models/Offer");
-const Product = require("../models/Product");
+} = require('../services/openApiBolServices');
+const { trackNewOffer } = require('../services/productChecker');
+const Offer = require('../models/Offer');
+const Product = require('../models/Product');
 
 const secret = keys.secretJWT;
 const router = express.Router();
 
-router.get("/offers", jwtAuth({ secret }), async (req, res) => {
+router.get('/offers', jwtAuth({ secret }), async (req, res) => {
   const user = await User.findOne({ _id: req.user._id }).exec();
   const detailedOfferInformation = [];
   const token = await getToken(req.user._id);
@@ -46,12 +46,12 @@ router.get("/offers", jwtAuth({ secret }), async (req, res) => {
   }
 });
 
-router.get("/v2/offers", jwtAuth({ secret }), async (req, res) => {
+router.get('/v2/offers', jwtAuth({ secret }), async (req, res) => {
   const bolOffers = await BolOffer.find({ user_id: req.user._id }).exec();
   return res.json({ bolOffers });
 });
 
-router.get("/offer/:id", jwtAuth({ secret }), async (req, res) => {
+router.get('/offer/:id', jwtAuth({ secret }), async (req, res) => {
   const bolOffer = await BolOffer.findOne({ _id: req.params.id }).exec();
 
   const token = await getToken(req.user._id);
@@ -65,7 +65,7 @@ router.get("/offer/:id", jwtAuth({ secret }), async (req, res) => {
   return res.json({ result: detailedInfo });
 });
 
-router.get("/offers/update", jwtAuth({ secret }), async (req, res) => {
+router.get('/offers/update', jwtAuth({ secret }), async (req, res) => {
   if (req.user) {
     const detailedOfferInformation = [];
     const token = await getToken(req.user._id);
@@ -114,7 +114,7 @@ router.get("/offers/update", jwtAuth({ secret }), async (req, res) => {
     }
   }
 });
-router.get("/orders", jwtAuth({ secret }), async (req, res) => {
+router.get('/orders', jwtAuth({ secret }), async (req, res) => {
   if (req.user) {
     const token = await getToken(req.user._id);
     const openOrders = await getOpenOrders(token);
@@ -122,7 +122,7 @@ router.get("/orders", jwtAuth({ secret }), async (req, res) => {
   }
 });
 
-router.post("/offer", jwtAuth({ secret }), async (req, res) => {
+router.post('/offer', jwtAuth({ secret }), async (req, res) => {
   if (req.user) {
     const token = await getToken(req.user._id);
     const { ean, condition, price, stockAmount, fulfilment } = req.body;
@@ -141,13 +141,13 @@ router.post("/offer", jwtAuth({ secret }), async (req, res) => {
   }
 });
 
-router.get("/otherOffers/:productId", async (req, res) => {
+router.get('/otherOffers/:productId', async (req, res) => {
   const otherOffers = await getOtherOffers(req.params.productId);
   console.log(otherOffers);
   res.json({ otherOffers });
 });
 
-router.post("/products", jwtAuth({ secret }), async (req, res) => {
+router.post('/products', jwtAuth({ secret }), async (req, res) => {
   const user = await User.findById(req.user._id).exec();
   const max_track_items = user.max_track_items;
   if (user.bol_track_items.length < max_track_items) {
@@ -165,19 +165,22 @@ router.post("/products", jwtAuth({ secret }), async (req, res) => {
   }
 });
 
-router.get("/products", jwtAuth({ secret }), async (req, res) => {
+router.get('/products', jwtAuth({ secret }), async (req, res) => {
   // const products = await Product.find({}).exec();
   const user = await User.findById(req.user._id).exec();
-  const products = user.bol_track_items.map(async track_item => {
-    return await Product.find({ _id: track_item }).exec();
+  const products = [];
+  const productsRaw = user.bol_track_items.map(async track_item => {
+    return Product.findOne({ _id: track_item }).then(product =>
+      products.push(product)
+    );
   });
-  Promise.all(products).then(() => {
+  Promise.all(productsRaw).then(() => {
     console.log(products);
     return res.json({ products });
   });
 });
 
-router.get("/products/:id", jwtAuth({ secret }), async (req, res) => {
+router.get('/products/:id', jwtAuth({ secret }), async (req, res) => {
   const product = await Product.findOne({ product_id: req.params.id }).exec();
 
   return res.json(product);
@@ -191,7 +194,7 @@ router.get("/products/:id", jwtAuth({ secret }), async (req, res) => {
 //   });
 // });
 
-router.get("/product/offers/:id", jwtAuth({ secret }), async (req, res) => {
+router.get('/product/offers/:id', jwtAuth({ secret }), async (req, res) => {
   Offer.find({ product_id: req.params.id }, (err, offers) => {
     return res.json({ offers });
   });

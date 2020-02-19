@@ -42,13 +42,7 @@ class BaseLayout extends React.Component {
               <Icon type="dashboard" />
               <span>Dashboard</span>
             </Menu.Item>
-            <Menu.Item
-              key="2"
-              onClick={() => this.props.history.push('/search-analytics')}
-            >
-              <Icon type="scan" />
-              <span>Search Analytics</span>
-            </Menu.Item>
+
             <Menu.Item
               key="4"
               onClick={() => this.props.history.push('/product-sold-analytics')}
@@ -56,13 +50,13 @@ class BaseLayout extends React.Component {
               <Icon type="monitor" />
               <span>Product Analytics</span>
             </Menu.Item>
-            <Menu.Item
+            {/* <Menu.Item
               key="5"
               onClick={() => this.props.history.push('/price-checker')}
             >
               <Icon type="control" />
               <span>Offer Management</span>
-            </Menu.Item>
+            </Menu.Item> */}
             <Menu.Item
               key="6"
               onClick={() => this.props.history.push('/create-offer')}

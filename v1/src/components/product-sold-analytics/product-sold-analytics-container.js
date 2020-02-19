@@ -1,13 +1,14 @@
-import React from "react";
-import ProductSoldAnalyticsView from "./product-sold-analytics-view";
-import { trackNewProduct, getTrackedProducts } from "../../utils/bol";
+import React from 'react';
+import ProductSoldAnalyticsView from './product-sold-analytics-view';
+import { trackNewProduct, getTrackedProducts } from '../../utils/bol';
 export default class ProductSoldAnalyticsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       productId: null,
       products: [],
-      bolPrice: 0
+      bolPrice: 0,
+      loading: true
     };
     this.handleTrackNewProduct = this.handleTrackNewProduct.bind(this);
     this.handleProductId = this.handleProductId.bind(this);
@@ -20,10 +21,10 @@ export default class ProductSoldAnalyticsContainer extends React.Component {
   };
   async componentDidMount() {
     const products = await getTrackedProducts();
-    this.setState({ products });
+    this.setState({ products, loading: false });
   }
   render() {
-    if (this.state.products.length >= 0) {
+    if (!this.state.loading) {
       return (
         <ProductSoldAnalyticsView
           handleTrackNewProduct={this.handleTrackNewProduct}

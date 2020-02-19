@@ -1,8 +1,24 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
   activated: {
+    type: Boolean,
+    default: false
+  },
+  first_name: {
+    type: String
+  },
+  last_name: {
+    type: String
+  },
+  address: {
+    type: String
+  },
+  zip: {
+    type: String
+  },
+  premium_account: {
     type: Boolean,
     default: false
   },
@@ -52,4 +68,4 @@ const UserSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model('User', UserSchema);

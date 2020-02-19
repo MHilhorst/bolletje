@@ -20,12 +20,27 @@ export default class ProfileView extends React.Component {
     this.state = {
       profileModal: false
     };
+    // this.handleChange = this.handleChange.bind(this);
   }
+
+  handleFirstName = e => {
+    this.props.onChange('firstName', e.target.value);
+  };
+  handleLastName = e => {
+    this.props.onChange('lastName', e.target.value);
+  };
+  handleAddress = e => {
+    this.props.onChange('address', e.target.value);
+  };
+  handleZip = e => {
+    this.props.onChange('zip', e.target.value);
+  };
   showProfileEdit = () => {
     this.setState({ profileModal: true });
   };
   handleProfileEdit = () => {
     this.setState({ profileModal: false });
+    this.props.handleSubmitProfileEdit();
   };
   handleCancel = () => {
     this.setState({ profileModal: false });
@@ -53,11 +68,15 @@ export default class ProfileView extends React.Component {
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Avatar size={64} icon="user" />
                     <div style={{ marginLeft: 10 }}>
-                      <Text strong>{this.props.user._id}</Text>
+                      <Text strong>
+                        {this.props.user.first_name} {this.props.user.last_name}
+                      </Text>
                       <br />
                       <Text>Premium user</Text>
                       <br />
-                      <Text>Address</Text>
+                      <Text>
+                        {this.props.user.address} {this.props.user.zip}
+                      </Text>
                     </div>
                   </div>
                   <div>
@@ -65,16 +84,14 @@ export default class ProfileView extends React.Component {
                   </div>
                 </div>
                 <Divider />
+                <div>
+                  <Text>Premium History</Text>
+                </div>
               </TabPane>
               <TabPane key="2" tab="Billing">
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: 10
-                  }}
-                >
+                <div>
                   <Text strong>Payment Method</Text>
+                  {!this.props.user.premium && <div>asdsad</div>}
                 </div>
               </TabPane>
               <TabPane key="3" tab="Security">
@@ -92,21 +109,37 @@ export default class ProfileView extends React.Component {
           <Row gutter={16} style={{ marginBottom: 10 }}>
             <Col span={12}>
               <label>First Name</label>
-              <Input style={{ marginTop: 4 }} />
+              <Input
+                style={{ marginTop: 4 }}
+                onChange={this.handleFirstName}
+                defaultValue={this.props.user.first_name}
+              />
             </Col>
             <Col span={12}>
               <label>Last Name</label>
-              <Input style={{ marginTop: 4 }} />
+              <Input
+                style={{ marginTop: 4 }}
+                onChange={this.handleLastName}
+                defaultValue={this.props.user.last_name}
+              />
             </Col>
           </Row>
           <Row gutter={16} style={{ marginBottom: 10 }}>
             <Col span={18}>
               <label>Address</label>
-              <Input style={{ marginTop: 4 }} />
+              <Input
+                style={{ marginTop: 4 }}
+                onChange={this.handleAddress}
+                defaultValue={this.props.user.address}
+              />
             </Col>
             <Col span={6}>
               <label>Postal Code</label>
-              <Input style={{ marginTop: 4 }} />
+              <Input
+                style={{ marginTop: 4 }}
+                onChange={this.handleZip}
+                defaultValue={this.props.user.zip}
+              />
             </Col>
           </Row>
         </Modal>
