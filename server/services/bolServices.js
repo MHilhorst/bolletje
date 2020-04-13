@@ -1,32 +1,38 @@
 const fetch = require('node-fetch');
-const fs = require('fs');
 const csv = require('csvtojson');
 
-const getInventory = async token => {
+const postHeaders = (token) => {
+  return {
+    Authorization: token,
+    Accept: 'application/vnd.retailer.v3+json',
+    'Content-Type': 'application/vnd.retailer.v3+json',
+  };
+};
+const getInventory = async (token) => {
   const response = await fetch('https://api.bol.com/retailer/inventory', {
     method: 'GET',
     headers: {
       Accept: 'application/vnd.retailer.v3+json',
-      Authorization: token
-    }
+      Authorization: token,
+    },
   });
   const data = await response.json();
   return 'hi';
 };
 
-const getOffer = async (token, id) => {
+const getOffer = async (id, token) => {
   const response = await fetch(`https://api.bol.com/retailer/offers/${id}`, {
     method: 'GET',
     headers: {
       Accept: 'application/vnd.retailer.v3+json',
-      Authorization: token
-    }
+      Authorization: token,
+    },
   });
   const data = await response.json();
   return data;
 };
 
-const getOffers = async (token, id, user) => {
+const getOffers = async (id, user, token) => {
   const myOffers = [];
   const response = await fetch(
     `https://api.bol.com/retailer/offers/export/${id}`,
@@ -34,10 +40,10 @@ const getOffers = async (token, id, user) => {
       method: 'GET',
       headers: {
         Accept: 'application/vnd.retailer.v3+csv',
-        Authorization: token
-      }
+        Authorization: token,
+      },
     }
-  ).catch(err => {
+  ).catch((err) => {
     console.log(err);
   });
   const data = await response.text();
@@ -56,8 +62,8 @@ const requestProcessStatus = async (id, token) => {
         method: 'GET',
         headers: {
           Accept: 'application/vnd.retailer.v3+json',
-          Authorization: token
-        }
+          Authorization: token,
+        },
       }
     );
     const dataEntityId = await entityIdResponse.json();
@@ -73,15 +79,15 @@ const requestProcessStatus = async (id, token) => {
   return { error: true };
 };
 
-const requestOffersList = async token => {
+const requestOffersList = async (token) => {
   const response = await fetch('https://api.bol.com/retailer/offers/export', {
     method: 'POST',
     headers: {
       Accept: 'application/vnd.retailer.v3+json',
       'Content-Type': 'application/vnd.retailer.v3+json',
-      Authorization: token
+      Authorization: token,
     },
-    body: JSON.stringify({ format: 'CSV' })
+    body: JSON.stringify({ format: 'CSV' }),
   });
   const data = await response.json();
   if (data.id) {
@@ -102,33 +108,33 @@ const createOffer = async (
   body = {
     ean: ean,
     condition: {
-      name: condition
+      name: condition,
     },
     pricing: {
       bundlePrices: [
         {
           quantity: 1,
-          price: price
-        }
-      ]
+          price: price,
+        },
+      ],
     },
     stock: {
       amount: stockAmount,
-      managedByRetailer: false
+      managedByRetailer: false,
     },
     fulfilment: {
       type: 'FBR',
-      deliveryCode: fulfilment
-    }
+      deliveryCode: fulfilment,
+    },
   };
   const response = await fetch('https://api.bol.com/retailer/offers', {
     method: 'POST',
     headers: {
       Authorization: token,
       Accept: 'application/vnd.retailer.v3+json',
-      'Content-Type': 'application/vnd.retailer.v3+json'
+      'Content-Type': 'application/vnd.retailer.v3+json',
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
   const data = await response.json();
   if (data.id) {
@@ -146,11 +152,11 @@ const updatePrice = async (offerId, price, token) => {
       headers: {
         Authorization: token,
         Accept: 'application/vnd.retailer.v3+json',
-        'Content-Type': 'application/vnd.retailer.v3+json'
+        'Content-Type': 'application/vnd.retailer.v3+json',
       },
       body: JSON.stringify({
-        pricing: { bundlePrices: [{ quantity: 1, price }] }
-      })
+        pricing: { bundlePrices: [{ quantity: 1, price }] },
+      }),
     }
   );
   const data = await response.json();
@@ -167,12 +173,12 @@ const updateStock = async (offerId, amount, token) => {
       headers: {
         Authorization: token,
         Accept: 'application/vnd.retailer.v3+json',
-        'Content-Type': 'application/vnd.retailer.v3+json'
+        'Content-Type': 'application/vnd.retailer.v3+json',
       },
       body: JSON.stringify({
         amount,
-        managedByRetailer: false
-      })
+        managedByRetailer: false,
+      }),
     }
   );
   const data = await response.json();
@@ -189,11 +195,11 @@ const updateAvailability = async (offerId, onHold, token) => {
       headers: {
         Authorization: token,
         Accept: 'application/vnd.retailer.v3+json',
-        'Content-Type': 'application/vnd.retailer.v3+json'
+        'Content-Type': 'application/vnd.retailer.v3+json',
       },
       body: JSON.stringify({
-        onHoldByRetailer: onHold
-      })
+        onHoldByRetailer: onHold,
+      }),
     }
   );
   const data = await response.json();
@@ -203,27 +209,28 @@ const updateAvailability = async (offerId, onHold, token) => {
 };
 
 const getCommission = async (ean, price, token) => {
+  console.log(ean);
   const response = await fetch('https://api.bol.com/retailer/commission', {
     method: 'POST',
-    headers: {
-      Authorization: token,
-      Accept: 'application/vnd.retailer.v3+json',
-      'Content-Type': 'application/vnd.retailer.v3+json'
-    },
+    headers: postHeaders(token),
     body: JSON.stringify({
       commissionQueries: [
         {
           ean,
           condition: 'NEW',
-          price
-        }
-      ]
-    })
+          price,
+        },
+      ],
+    }),
   });
   const data = await response.json();
-  return data.commissions[0];
+  if (data.commissions) {
+    return data.commissions[0];
+  } else {
+    return { error: true };
+  }
 };
-const getOpenOrders = async token => {
+const getOpenOrders = async (token) => {
   const response = await fetch(
     'https://api.bol.com/retailer-demo/orders?fulfilment-method=FBR',
     {
@@ -231,8 +238,8 @@ const getOpenOrders = async token => {
       headers: {
         Authorization: token,
         Accept: 'application/vnd.retailer.v3+json',
-        'Content-Type': 'application/vnd.retailer.v3+json'
-      }
+        'Content-Type': 'application/vnd.retailer.v3+json',
+      },
     }
   );
   const data = await response.json();
@@ -247,8 +254,8 @@ const getDetailedOrder = async (orderId, token) => {
       headers: {
         Authorization: token,
         Accept: 'application/vnd.retailer.v3+json',
-        'Content-Type': 'application/vnd.retailer.v3+json'
-      }
+        'Content-Type': 'application/vnd.retailer.v3+json',
+      },
     }
   );
   const data = await response.json();

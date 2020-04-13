@@ -6,7 +6,7 @@ const jwtAuth = require('express-jwt');
 const {
   updatePrice,
   updateStock,
-  getCommission
+  getCommission,
 } = require('../services/bolServices');
 const { getToken } = require('../services/accessToken');
 const secret = keys.secretJWT;
@@ -15,7 +15,7 @@ const router = express.Router();
 router.post('/offer', jwtAuth({ secret }), async (req, res) => {
   const offer = await BolOffer.findOne({
     _id: req.body.bolOfferId,
-    user_id: req.user._id
+    user_id: req.user._id,
   }).exec();
   offer.auto_track = req.body.autoTrack;
   if (req.body.priceChangeAmount)
@@ -49,14 +49,9 @@ router.post('/offer', jwtAuth({ secret }), async (req, res) => {
 router.get('/offer/:id', jwtAuth({ secret }), async (req, res) => {
   const offer = await BolOffer.findOne({
     _id: req.params.id,
-    user_id: req.user._id
+    user_id: req.user._id,
   }).exec();
   res.json({ ...offer._doc });
 });
 
-router.post('/commission', jwtAuth({ secret }), async (req, res) => {
-  const token = await getToken(req.user._id);
-  const commission = await getCommission(req.body.ean, req.body.price, token);
-  res.json({ ...commission });
-});
 module.exports = router;

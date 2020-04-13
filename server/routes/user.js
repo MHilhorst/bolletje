@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
+const Message = require('../models/Message');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
@@ -9,15 +10,11 @@ const fetch = require('node-fetch');
 
 const secret = keys.secretJWT;
 
-router.get('/', jwtAuth({ secret }), (req, res) => {
-  User.findOne(
-    { _id: req.user._id },
-    { password: 0, email: 0 },
-    (err, user) => {
-      if (err) console.log(err);
-      return res.json({ user });
-    }
-  );
+router.get('/', (req, res) => {
+  User.findOne({ _id: req.user._id }, { password: 0 }, (err, user) => {
+    if (err) console.log(err);
+    return res.json({ user });
+  });
 });
 
 router.post('/', jwtAuth({ secret }), (req, res) => {
@@ -37,12 +34,42 @@ router.post('/', jwtAuth({ secret }), (req, res) => {
   );
 });
 
+router.get('/timeline', async (req, res) => {
+  console.log('checking');
+  const messages = await Message.find({}).limit(5).sort({ created: 1 }).exec();
+  res.json({ messages });
+});
+
+router.delete('/timeline/:id', async (req, res) => {
+  console.log('checking');
+  const messages = await Message.remove({ _id: req.params.id }).exec();
+  res.json({ success: true });
+});
+
 router.put('/', jwtAuth({ secret }), (req, res) => {
   const toUpdate = {};
   if (req.body.firstName) toUpdate.first_name = req.body.firstName;
   if (req.body.lastName) toUpdate.last_name = req.body.lastName;
   if (req.body.address) toUpdate.address = req.body.address;
   if (req.body.zip) toUpdate.zip = req.body.zip;
+  if (req.body.email) toUpdate.email = req.body.email;
+  if (req.body.password) {
+    bcrypt.genSalt(10, (err, salt) => {
+      if (err) throw err;
+      bcrypt.hash(req.body.password, salt, (err, hash) => {
+        if (err) throw err;
+        toUpdate.password = hash;
+        User.findOneAndUpdate(
+          { _id: req.user._id },
+          { $set: toUpdate },
+          { new: true },
+          (err, user) => {
+            console.log(user);
+          }
+        );
+      });
+    });
+  }
   User.findOneAndUpdate(
     { _id: req.user._id },
     { $set: toUpdate },
@@ -61,15 +88,15 @@ router.get('/bol/auth', (req, res) => {
       Accept: 'application/json',
       Authorization: `Basic ${Buffer.from(
         `${keys.bol.clientId}:${keys.bol.secret}`
-      ).toString('base64')}`
-    }
+      ).toString('base64')}`,
+    },
   })
-    .then(res => res.json())
-    .then(data => {
+    .then((res) => res.json())
+    .then((data) => {
       console.log(data);
       res.json({ succes: 'gang!' });
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       return res.json({ error: 'helaas' });
     });

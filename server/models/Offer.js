@@ -3,53 +3,59 @@ const Schema = mongoose.Schema;
 
 const OfferSchema = new Schema({
   public_offer_id: {
-    type: Number
+    type: Number,
   },
   price: {
-    type: Number
+    type: Number,
   },
   quantity: {
-    type: Number
+    type: Number,
   },
   seller_id: {
-    type: String
+    type: String,
   },
   seller_display_name: {
-    type: String
+    type: String,
   },
   seller: {
-    type: Object
+    type: Object,
   },
   product_id: {
-    type: String
+    type: String,
   },
   product_ean: {
-    type: String
+    type: String,
   },
   product_title: {
-    type: String
+    type: String,
   },
   product_image: {
-    type: String
+    type: String,
   },
   updates: {
     type: Array,
-    default: null
+    default: null,
   },
   total_sold: {
     type: Number,
-    default: 0
+    default: 0,
   },
   created: {
-    type: Date
+    type: Date,
   },
   available: {
     type: Boolean,
-    default: true
+    default: true,
   },
   last_update: {
-    tupe: Date
-  }
+    type: Date,
+  },
+});
+
+OfferSchema.pre('save', function (next) {
+  const offer = this;
+  offer.last_update = Date.now();
+  next();
 });
 
 module.exports = mongoose.model('Offer', OfferSchema);

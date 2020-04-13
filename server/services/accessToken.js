@@ -1,7 +1,7 @@
-const User = require("../models/User");
-const fetch = require("node-fetch");
+const User = require('../models/User');
+const fetch = require('node-fetch');
 
-const getUser = id => {
+const getUser = (id) => {
   return User.findOne({ _id: id }).exec();
 };
 
@@ -9,7 +9,10 @@ const updateUserAccessToken = (access_token, user) => {
   User.findOneAndUpdate(
     { _id: user._id },
     {
-      $set: { access_token: access_token, last_update_access_token: Date.now() }
+      $set: {
+        access_token: access_token,
+        last_update_access_token: Date.now(),
+      },
     },
     { new: true },
     (err, user) => {
@@ -18,18 +21,18 @@ const updateUserAccessToken = (access_token, user) => {
   );
 };
 
-const getNewToken = async id => {
+const getNewToken = async (id) => {
   const user = await getUser(id);
   const response = await fetch(
     `https://login.bol.com/token?grant_type=client_credentials`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
-        Accept: "application/json",
+        Accept: 'application/json',
         Authorization: `Basic ${Buffer.from(
           `${user.bol_client_id}:${user.bol_client_secret}`
-        ).toString("base64")}`
-      }
+        ).toString('base64')}`,
+      },
     }
   );
   const data = await response.json();
@@ -38,7 +41,7 @@ const getNewToken = async id => {
   return `Bearer ${access_token}`;
 };
 
-const getToken = async id => {
+const getToken = async (id) => {
   const user = await getUser(id);
   const timeDifference = (Date.now() - user.last_update_access_token) / 1000;
   if (timeDifference < 240) {
@@ -48,5 +51,4 @@ const getToken = async id => {
   }
 };
 
-module.exports.getNewToken = getNewToken;
 module.exports.getToken = getToken;

@@ -1,26 +1,37 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
-const keys = require('./config/keys');
 const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
+const uuid = require('node-uuid');
 const compression = require('compression');
-const PriceMonitor = require('./services/productChecker');
-const OfferMonitor = require('./services/autoOfferChecker');
-const PORT = process.env.PORT || 5000;
+const auth = require('./services/authMiddleware');
+const adminAuth = require('./services/adminAuthMiddleware');
 
 const app = express();
 const server = require('http').Server(app);
 
-PriceMonitor();
-OfferMonitor();
+const assignId = (req, res, next) => {
+  req.id = uuid.v4();
+  next();
+};
 
 const corsOptions = {
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
+
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, 'access.log'),
+  { flags: 'a' }
+);
+// app.use(assignId);
 app.use(morgan('dev'));
+app.use(morgan('common', { stream: accessLogStream }));
 app.use(cors(corsOptions));
 app.use(compression());
 app.use(passport.initialize());
@@ -30,27 +41,34 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 mongoose.connect(
-  keys.mongoURI,
+  process.env.MONGODB_URL,
   { useNewUrlParser: true, useUnifiedTopology: true },
-  err => {
+  (err) => {
     if (err) {
       console.log(err);
+    } else {
+      console.log('Connected to Mongoose');
     }
   }
 );
+
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 passport.serializeUser((user, done) => {
+  console.log(user);
   done(null, user);
 });
 
 passport.deserializeUser((user, done) => {
+  console.log(user);
+
   done(null, user);
 });
 
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/user', require('./routes/user'));
-app.use('/api/bol', require('./routes/bol'));
+app.use('/api/user', auth, require('./routes/user'));
+app.use('/api/bol', auth, require('./routes/bol'));
+app.use('/api/admin', adminAuth, require('./routes/admin'));
 app.use('/api/track', require('./routes/track'));
 app.use('/api/order', require('./routes/order'));
 app.use('/api/inventory', require('./routes/inventory'));
