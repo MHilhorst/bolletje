@@ -8,15 +8,20 @@ export default class ProductSoldAnalyticsContainer extends React.Component {
       productId: null,
       products: [],
       bolPrice: 0,
-      loading: true
+      loading: true,
     };
     this.handleTrackNewProduct = this.handleTrackNewProduct.bind(this);
     this.handleProductId = this.handleProductId.bind(this);
   }
-  handleTrackNewProduct = () => {
-    trackNewProduct(this.state.productId);
+  handleTrackNewProduct = async () => {
+    const newProduct = await trackNewProduct(this.state.productId);
+    if (newProduct) {
+      this.props.history.push(
+        `/product-sold-analytics/${newProduct.product_id}`
+      );
+    }
   };
-  handleProductId = e => {
+  handleProductId = (e) => {
     this.setState({ productId: e.target.value });
   };
   async componentDidMount() {

@@ -7,24 +7,18 @@ class LoginWrapper extends React.Component {
   }
   render() {
     const { component: Component, ...rest } = this.props;
-    return (
-      <Route
-        {...rest}
-        render={props => {
-          if (this.props.user) {
-            return (
-              <Redirect
-                to={{
-                  pathname: '/dashboard'
-                }}
-              />
-            );
-          } else {
+    if (this.props.session) {
+      return <Redirect to={{ pathname: '/dashboard' }} />;
+    } else {
+      return (
+        <Route
+          {...rest}
+          render={(props) => {
             return <Component {...this.props} {...props} />;
-          }
-        }}
-      />
-    );
+          }}
+        />
+      );
+    }
   }
 }
 

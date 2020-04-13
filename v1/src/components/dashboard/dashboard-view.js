@@ -1,12 +1,22 @@
-import React from "react";
-import { Box } from "../../styles/style";
-import BolConfirmModal from "./bol-confirm";
-import { Button } from "antd";
+import React from 'react';
+import { Box } from '../../styles/style';
+import { Typography, Comment, Avatar, Button } from 'antd';
+
+const { Title, Text } = Typography;
+
+const getFormattedDate = (date) => {
+  let year = date.getFullYear();
+  let month = (1 + date.getMonth()).toString().padStart(2, '0');
+  let day = date.getDate().toString().padStart(2, '0');
+
+  return month + '/' + day + '/' + year;
+};
+
 class DashboardView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      visibleBolModal: false
+      visibleBolModal: false,
     };
   }
   handleBolConfirm = () => {
@@ -15,11 +25,44 @@ class DashboardView extends React.Component {
   handleCancel = () => {
     this.setState({ visibleBolModal: false });
   };
+  handleDelete = (messageId) => {
+    this.props.handleDelete(messageId._id);
+  };
 
   render() {
     return (
       <>
-        <BolConfirmModal
+        <Box>
+          <Title level={2}>Welkom</Title>
+          <Text>asdasdsd</Text>
+        </Box>
+        {this.props.messages &&
+          this.props.messages.map((message) => {
+            return (
+              <Box>
+                <Comment
+                  style={{ marginBottom: '-1em' }}
+                  author={'Michael Hilhorst'}
+                  avatar={
+                    <Avatar
+                      src="https://media-exp1.licdn.com/dms/image/C4D03AQGUHyYvEAxkbw/profile-displayphoto-shrink_200_200/0?e=1592438400&v=beta&t=VeqL8jfykx7s1Sbv-aqJYnCE4YBHN8U3JAIDxg3ofRU"
+                      alt="Michael Hilhorst"
+                    />
+                  }
+                  content={<p>{message.message}</p>}
+                  datetime={getFormattedDate(
+                    new Date(message.created)
+                  ).toString()}
+                />
+                {this.props.user.admin_account && (
+                  <Button onClick={() => this.handleDelete(message)}>
+                    Delete
+                  </Button>
+                )}
+              </Box>
+            );
+          })}
+        {/* <BolConfirmModal
           visible={this.state.visibleBolModal}
           handleCancel={this.handleCancel}
           user={this.props.user}
@@ -39,7 +82,7 @@ class DashboardView extends React.Component {
             )}
         </Box>
 
-        <Box>asd</Box>
+        <Box>asd</Box> */}
       </>
     );
   }

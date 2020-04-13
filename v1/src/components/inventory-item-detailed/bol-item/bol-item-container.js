@@ -1,16 +1,16 @@
-import React from "react";
-import BolItemView from "./bol-item-view";
+import React from 'react';
+import BolItemView from './bol-item-view';
 import {
   getCommission,
   updateAutoOffer,
   getBolOffers,
   findSeller
-} from "../../../utils/bol";
+} from '../../../utils/bol';
 import {
   deleteBolOfferOfInventoryItem,
   setBolOfferOfInventoryItem,
   getBolOfferOfInventoryItem
-} from "../../../utils/inventory";
+} from '../../../utils/inventory';
 
 const getBuyBox = async (offers, user) => {
   const ownOfferIndex = offers.findIndex(offer => {
@@ -36,10 +36,10 @@ export default class BolItemContainer extends React.Component {
         this.props.inventoryItem.bol_id
       );
       const tableData = [];
-      const currentRank = findSeller(
-        data.result.offerData.offers,
-        this.props.user
-      );
+      const currentRank = false;
+      try {
+        currentRank = findSeller(data.result.offerData.offers, this.props.user);
+      } catch {}
       let buyBox;
       try {
         buyBox = await getBuyBox(data.result.offerData.offers, this.props.user);
@@ -51,10 +51,10 @@ export default class BolItemContainer extends React.Component {
         ean: data.result.ean,
         currentPrice: data.result.pricing.bundlePrices[0].price,
         currentStock: data.result.stock.amount,
-        totalSellers: data.result.offerData.offers.length,
+        totalSellers: data.result.offerData.offers.length || 0,
         offerRank: currentRank,
         offerInfo: data.result,
-        buyBox: buyBox || "",
+        buyBox: buyBox || '',
         liveTracking: data.result.bolOffer.auto_track
       });
       this.setState({
@@ -76,7 +76,7 @@ export default class BolItemContainer extends React.Component {
       this.setState({
         bolReceivePrice: commission.totalCost,
         bolCommissionPercentage: commission.percentage,
-        commissionReduction: commission.hasOwnProperty("reductions")
+        commissionReduction: commission.hasOwnProperty('reductions')
           ? commission.reductions[0]
           : false
       });
@@ -95,7 +95,7 @@ export default class BolItemContainer extends React.Component {
     const data = {
       bolOfferId
     };
-    if (typeof this.state.autoPriceChanger !== "undefined")
+    if (typeof this.state.autoPriceChanger !== 'undefined')
       data.autoTrack = this.state.autoPriceChanger;
     if (this.state.minProfit) data.minProfit = this.state.minProfit;
     if (this.state.minListingPrice)

@@ -4,7 +4,7 @@ import {
   reloadOffers,
   updateAutoOffer,
   getUserOwnOffers,
-  getCommission
+  getCommission,
 } from '../../utils/bol';
 
 import { findSeller } from '../../utils/bol';
@@ -15,7 +15,7 @@ export default class PriceCheckerContainer extends React.Component {
     this.state = {
       offers: [],
       loadingOffers: false,
-      tableOffers: []
+      tableOffers: [],
     };
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -23,9 +23,9 @@ export default class PriceCheckerContainer extends React.Component {
     this.setState({ [key]: value });
   };
 
-  handleSubmit = async bolOfferId => {
+  handleSubmit = async (bolOfferId) => {
     const data = {
-      bolOfferId
+      bolOfferId,
     };
     if (typeof this.state.autoPriceChanger !== 'undefined')
       data.autoTrack = this.state.autoPriceChanger;
@@ -44,20 +44,19 @@ export default class PriceCheckerContainer extends React.Component {
   };
 
   async componentDidMount() {
-    const offerTableSchema = [];
-    let offerKey = 0;
+    // const offerTableSchema = [];
     const offers = await getUserOwnOffers();
-    offers.result.map(offer => {
+    const offerTableSchema = offers.result.map((offer, index) => {
       try {
         if (!offer.offerData.hasOwnProperty('offers')) {
+          return null;
         } else {
           const currentRank = findSeller(
             offer.offerData.offers,
             this.props.user.bol_shop_name
           );
-          offerKey += 1;
-          offerTableSchema.push({
-            key: offerKey,
+          return {
+            key: index,
             productName: offer.store.productTitle,
             ean: offer.ean,
             currentPrice: offer.pricing.bundlePrices[0].price,
@@ -65,8 +64,8 @@ export default class PriceCheckerContainer extends React.Component {
             totalSellers: offer.offerData.offers.length,
             offerRank: currentRank,
             offerInfo: offer,
-            liveTracking: offer.autoOffer.auto_track
-          });
+            liveTracking: offer.autoOffer.auto_track,
+          };
         }
       } catch {}
     });
@@ -74,10 +73,42 @@ export default class PriceCheckerContainer extends React.Component {
       this.setState({
         offers: offers.result,
         tableOffers: offerTableSchema,
-        loadingOffers: false
+        loadingOffers: false,
       });
     }
   }
+
+  // offers.result.map(offer => {
+  //   try {
+  //     if (!offer.offerData.hasOwnProperty('offers')) {
+  //     } else {
+  //       const currentRank = findSeller(
+  //         offer.offerData.offers,
+  //         this.props.user.bol_shop_name
+  //       );
+  //       offerKey += 1;
+  //       offerTableSchema.push({
+  //         key: offerKey,
+  //         productName: offer.store.productTitle,
+  //         ean: offer.ean,
+  //         currentPrice: offer.pricing.bundlePrices[0].price,
+  //         currentStock: offer.stock.amount,
+  //         totalSellers: offer.offerData.offers.length,
+  //         offerRank: currentRank,
+  //         offerInfo: offer,
+  //         liveTracking: offer.autoOffer.auto_track
+  //       });
+  //     }
+  //   } catch {}
+  // });
+  // if (offers.result.length >= 1) {
+  //   this.setState({
+  //     offers: offers.result,
+  //     tableOffers: offerTableSchema,
+  //     loadingOffers: false
+  //   });
+  // }
+
   handleCommission = async (ean, price, minListing) => {
     if (!minListing) {
       const commission = await getCommission(ean, price);
@@ -86,12 +117,12 @@ export default class PriceCheckerContainer extends React.Component {
         bolCommissionPercentage: commission.percentage,
         commissionReduction: commission.hasOwnProperty('reductions')
           ? commission.reductions[0]
-          : false
+          : false,
       });
     } else {
       const commission = await getCommission(ean, price);
       this.setState({
-        minListingCommission: commission.totalCost
+        minListingCommission: commission.totalCost,
       });
     }
   };
@@ -101,7 +132,7 @@ export default class PriceCheckerContainer extends React.Component {
     if (offers) {
       const offerTableSchema = [];
       let offerKey = 0;
-      offers.result.map(offer => {
+      offers.result.map((offer) => {
         const currentRank = findSeller(
           offer.offerData.offers,
           this.props.user.bol_shop_name
@@ -115,14 +146,14 @@ export default class PriceCheckerContainer extends React.Component {
           currentStock: offer.stock.amount,
           totalSellers: offer.offerData.offers.length,
           offerRank: currentRank,
-          offerInfo: offer
+          offerInfo: offer,
         });
       });
       if (offers.result.length >= 1) {
         this.setState({
           offers: offers.result,
           tableOffers: offerTableSchema,
-          loadingOffers: false
+          loadingOffers: false,
         });
       }
     }

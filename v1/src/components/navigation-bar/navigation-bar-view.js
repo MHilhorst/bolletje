@@ -1,18 +1,22 @@
 import React from 'react';
-import { Avatar, Dropdown, Menu, Typography } from 'antd';
+import { Avatar, Dropdown, Menu, Typography, Tag } from 'antd';
 import Cookies from 'js-cookie';
+import { userLogout } from '../../utils/auth';
 const { Text } = Typography;
 class NavigationBarView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      visible: false
+      visible: false,
     };
   }
   logout = () => {
     console.log('logging out');
-    Cookies.remove('token');
-    window.location.reload();
+    if (userLogout()) {
+      Cookies.remove('token', { path: '/', domain: 'localhost' });
+      // this.props.history.replace('/login');
+      window.location.reload();
+    }
   };
   menu = (
     <Menu>
@@ -20,17 +24,37 @@ class NavigationBarView extends React.Component {
         <a href="/profile">
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Avatar size={32} icon="user" />
-            <div style={{ marginLeft: 10 }}>
+            <div style={{ marginLeft: 10, marginTop: 4, marginBottom: 4 }}>
               <Text strong style={{ marginBottom: 0, paddingBottom: 0 }}>
-                {this.props.user._id}
+                {this.props.user.first_name} {this.props.user.last_name}{' '}
+                {this.props.user.premium_account && (
+                  <Tag color="orange">Premium</Tag>
+                )}
+                {!this.props.user.premium_account && (
+                  <Tag color="green">Trial</Tag>
+                )}
               </Text>
               <span style={{ display: 'block', marginTop: 0, paddingTop: 0 }}>
-                asdad
+                {this.props.user.email}
               </span>
             </div>
           </div>
         </a>
       </Menu.Item>
+      <Menu.Divider />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginLeft: 10,
+        }}
+      >
+        <Tag color="green" style={{ marginTop: 4, marginBottom: 4 }}>
+          {this.props.user.bol_track_items.length}/
+          {this.props.user.max_track_items}
+        </Tag>
+        <span>Items tracked</span>
+      </div>
       <Menu.Divider />
       <Menu.Item key="1">
         <a rel="noopener noreferrer" href="/profile">

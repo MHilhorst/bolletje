@@ -8,7 +8,7 @@ class BaseLayout extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      collapsed: false
+      collapsed: false,
     };
   }
   onCollapse = () => {
@@ -43,13 +43,32 @@ class BaseLayout extends React.Component {
               <span>Dashboard</span>
             </Menu.Item>
 
-            <Menu.Item
-              key="4"
-              onClick={() => this.props.history.push('/product-sold-analytics')}
+            <SubMenu
+              key="2"
+              title={
+                <span>
+                  <Icon type="monitor" />
+                  <span>Product Analytics</span>
+                </span>
+              }
             >
-              <Icon type="monitor" />
-              <span>Product Analytics</span>
-            </Menu.Item>
+              <Menu.Item
+                key="3"
+                onClick={() =>
+                  this.props.history.push('/product-sold-analytics')
+                }
+              >
+                <Icon type="SearchOutlined" />
+                <span>Overview</span>
+              </Menu.Item>
+              <Menu.Item
+                key="4"
+                onClick={() => this.props.history.push('/track-product')}
+              >
+                <Icon type="upload" />
+                <span>Track New Product</span>
+              </Menu.Item>
+            </SubMenu>
             {/* <Menu.Item
               key="5"
               onClick={() => this.props.history.push('/price-checker')}
@@ -57,7 +76,7 @@ class BaseLayout extends React.Component {
               <Icon type="control" />
               <span>Offer Management</span>
             </Menu.Item> */}
-            <Menu.Item
+            {/* <Menu.Item
               key="6"
               onClick={() => this.props.history.push('/create-offer')}
             >
@@ -87,8 +106,8 @@ class BaseLayout extends React.Component {
                 <Icon type="setting" />
                 <span>Configuration</span>
               </Menu.Item>
-            </SubMenu>
-            <SubMenu
+            </SubMenu> */}
+            {/* <SubMenu
               key="sub2"
               title={
                 <span>
@@ -113,30 +132,60 @@ class BaseLayout extends React.Component {
                 <Icon type="setting" />
                 <span>Create Inventory Item</span>
               </Menu.Item>
-            </SubMenu>
-            <SubMenu
-              key="sub3"
-              title={
-                <span>
-                  <Icon type="build" />
-                  <span>Plugins</span>
-                </span>
-              }
-            >
-              {this.props.user.plugins.indexOf(a => a === 'aliexpress') ===
-                -1 && (
+            </SubMenu> */}
+            {this.props.user.admin_account && (
+              <SubMenu
+                key="5"
+                title={
+                  <span>
+                    <Icon type="import" />
+                    <span>Admin</span>
+                  </span>
+                }
+              >
                 <Menu.Item
-                  key="9"
-                  onClick={() => this.props.history.push('/plugin/aliexpress')}
+                  key="6"
+                  onClick={() =>
+                    this.props.history.push({
+                      pathname: '/admin/users',
+                      search: '?page1',
+                    })
+                  }
                 >
-                  <Icon type="alibaba" />
-                  <span>AliExpress</span>
+                  <Icon type="user" />
+                  <span>Users</span>
                 </Menu.Item>
-              )}
-            </SubMenu>
+                <Menu.Item
+                  key="7"
+                  onClick={() =>
+                    this.props.history.push({
+                      pathname: '/admin/products',
+                      search: '?page1',
+                    })
+                  }
+                >
+                  <Icon type="gold" />
+                  <span>Products</span>
+                </Menu.Item>
+                <Menu.Item
+                  key="8"
+                  onClick={() =>
+                    this.props.history.push({
+                      pathname: '/admin/dashboard',
+                    })
+                  }
+                >
+                  <Icon type="dashboard" />
+                  <span>Dashboard</span>
+                </Menu.Item>
+              </SubMenu>
+            )}
           </Menu>
         </Sider>
-        <Layout>
+        <Layout
+          className="site-layout"
+          // style={{ marginLeft: this.state.collapsed ? 0 : 200 }}
+        >
           <Header
             style={{
               background: '#fff',
@@ -144,7 +193,7 @@ class BaseLayout extends React.Component {
               paddingRight: 24,
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           >
             <Icon
@@ -156,7 +205,7 @@ class BaseLayout extends React.Component {
           </Header>
           <Content
             style={{
-              margin: '0px 16px'
+              margin: '0px 16px',
             }}
           >
             {this.props.children}

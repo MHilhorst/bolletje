@@ -18,23 +18,20 @@ import {
   Comment,
   Avatar,
   Tooltip,
-  Select
+  Select,
 } from 'antd';
 const { Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
-const getFormattedDate = date => {
+const getFormattedDate = (date) => {
   let year = date.getFullYear();
   let month = (1 + date.getMonth()).toString().padStart(2, '0');
-  let day = date
-    .getDate()
-    .toString()
-    .padStart(2, '0');
+  let day = date.getDate().toString().padStart(2, '0');
 
   return month + '/' + day + '/' + year;
 };
 
-const getLowestPrice = offer_ids => {
+const getLowestPrice = (offer_ids) => {
   let minValue = offer_ids[0].price;
   for (var i = 0; i < offer_ids.length; i++) {
     if (offer_ids[i].price < minValue) {
@@ -43,28 +40,71 @@ const getLowestPrice = offer_ids => {
   }
   return minValue;
 };
+
+const setActiveOffersFirst = (offers, active_offers) => {
+  // active_offers.forEach((active_offer) => {
+  //   console.log(active_offer, offers);
+  //   console.log(offers.indexOf(active_offer));
+  // });
+  active_offers.forEach((active_offer) => {
+    const offer = offers.findIndex(
+      (x) => x.public_offer_id.toString() === active_offer
+    );
+    console.log(offer, offers[offer]);
+    offers.unshift(offers.splice(offer, 1)[0]);
+  });
+  console.log(offers);
+  return offers;
+};
+
+// Change the way lastDay amount is fetched > Use For loop to get first item in reversed array that is equal to a day earlier. Other option is to check how often a product is updated in a day and setting it to 1. It will only check for a whole day once.
+const getLast24hourSales = (offers) => {
+  let totalSold = 0;
+  offers.forEach((offer) => {
+    let sold = 0;
+    const lastDay = offer.updates.slice(Math.max(offer.updates.length - 30, 1));
+    lastDay.forEach((offer) => {
+      sold += offer.quantitySoldSincePrevious;
+    });
+    totalSold += sold;
+  });
+  return totalSold;
+};
+
+// const getLast24hourSales = (offers) => {
+//   let totalSold = 0;
+//   offers.forEach((offer) => {
+//     offer.updates.map((update) => {
+//       let
+//     });
+//   });
+// };
+
 const WAIT_INTERVAL = 1000;
+
 export default class ProductSoldAnalyticsDetailedView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       visible: false,
       drawerSuggestions: false,
-      graphType: 'stepline'
+      graphType: 'stepline',
+      offers: [],
+      loading: true,
     };
     this.timer = null;
   }
-  handleChangeBolPrice = value => {
+  handleChangeBolPrice = (value) => {
     this.props.onChange('bolPrice', value);
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       this.props.handleCommission(this.props.product.ean, value);
     }, WAIT_INTERVAL);
   };
-  handleChangePackagingCosts = value => {
+  handleChangePackagingCosts = (value) => {
     this.props.onChange('packagingCosts', value);
   };
-  handleChangeProductCosts = value => {
+  handleChangeProductCosts = (value) => {
     this.props.onChange('productCosts', value);
   };
   showPriceSuggestions = () => {
@@ -73,7 +113,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
   handleClosePriceSuggestion = () => {
     this.setState({ drawerSuggestions: false });
   };
-  handleChangeGraphType = v => {
+  handleChangeGraphType = (v) => {
     this.setState({ graphType: v });
   };
   handleOk = () => {
@@ -82,12 +122,32 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
   handleCancel = () => {
     this.setState({ visible: false });
   };
+
+  handleDeleteProduct = () => {
+    this.props.deleteProduct();
+  };
+
   async componentDidMount() {
-    this.handleChangeBolPrice(this.props.offers[0].price);
+    if (this.props.offers.length > 0) {
+      const offers = await setActiveOffersFirst(
+        this.props.offers,
+        this.props.product.active_offers
+      );
+      this.setState({ offers, loading: false });
+    } else {
+      this.setState({ loading: false });
+    }
+    // this.handleChangeBolPrice(this.props.offers[0].price);
   }
+
   render() {
     return (
       <>
+        {this.props.user.premium_account && (
+          <Box>
+            <Button onClick={this.handleDeleteProduct}>Delete product</Button>
+          </Box>
+        )}
         <Box>
           <Descriptions title="Product Information" bordered>
             <Descriptions.Item label="Product">
@@ -121,7 +181,8 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
               ) + ' Hours'}
             </Descriptions.Item>
             <Descriptions.Item label="Tracking Status" span={1}>
-              <Badge status="processing" text="Tracking" />
+              <Badge status="processing" />
+              <Tag color="green">Live Tracking</Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Price suggestion" span={2}>
               <span onClick={this.showPriceSuggestions}>48.43</span>
@@ -143,12 +204,53 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             </Descriptions.Item>
           </Descriptions>
         </Box>
+        {this.props.user.premium_account && (
+          <Box>
+            <Descriptions title="Developer Information" bordered>
+              <Descriptions.Item label="Internal ID">
+                {this.props.product._id}
+              </Descriptions.Item>
+              <Descriptions.Item label="Last Offer Check">
+                {this.props.product.last_offer_check}
+              </Descriptions.Item>
+              <Descriptions.Item label="Last Old Offer Wipe">
+                {this.props.product.last_old_offer_wipe}
+              </Descriptions.Item>
+              <Descriptions.Item label="Active Offers">
+                {this.props.product.active_offers.map((offer) => {
+                  return (
+                    <>
+                      <span>{offer}</span>
+                      <br />
+                    </>
+                  );
+                })}
+              </Descriptions.Item>
+            </Descriptions>
+          </Box>
+        )}
         <Row gutter={[16, 16]}>
           <Col sm={24} md={6} lg={6} xl={6}>
             <Box>
               <Statistic
                 title="Total Sold Since Tracking"
-                value={this.props.product.total_sold}
+                formatter={(value) => {
+                  return (
+                    <div>
+                      <span>{this.props.product.total_sold} </span>
+                      <Badge
+                        className="site-badge-count-109"
+                        count={
+                          '+ ' +
+                          `${getLast24hourSales(this.state.offers)}` +
+                          ' In last 24 hours'
+                        }
+                        style={{ backgroundColor: '#52c41a', marginBottom: 5 }}
+                      />
+                    </div>
+                  );
+                }}
+                // value={this.props.product.total_sold}
               />
             </Box>
           </Col>
@@ -159,14 +261,10 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
                 value={
                   Math.round(
                     this.props.product.total_sold /
-                      Math.round(
-                        (new Date().getTime() -
-                          new Date(
-                            this.props.product.tracking_since
-                          ).getTime()) /
-                          1000 /
-                          86400
-                      )
+                      ((new Date().getTime() -
+                        new Date(this.props.product.tracking_since).getTime()) /
+                        1000 /
+                        86400)
                   ) * 30
                 }
               />
@@ -178,51 +276,53 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
                 title="Avg Daily sales"
                 value={Math.round(
                   this.props.product.total_sold /
-                    Math.round(
-                      (new Date().getTime() -
-                        new Date(this.props.product.tracking_since).getTime()) /
-                        1000 /
-                        86400
-                    )
+                    ((new Date().getTime() -
+                      new Date(this.props.product.tracking_since).getTime()) /
+                      1000 /
+                      86400)
                 )}
               />
             </Box>
           </Col>
           <Col sm={24} md={6} lg={6} xl={6}>
             <Box>
-              <Statistic
-                title="Estimated Monthly Revenue"
-                value={
-                  '€ ' +
-                  (
+              {!this.state.loading && (
+                <Statistic
+                  title="Estimated Monthly Revenue"
+                  value={
+                    '€ ' +
                     Math.round(
-                      this.props.product.total_sold /
-                        Math.round(
-                          (new Date().getTime() -
-                            new Date(
-                              this.props.product.tracking_since
-                            ).getTime()) /
-                            1000 /
-                            86400
-                        )
-                    ) *
-                    30 *
-                    (this.props.product.offer_ids.length > 0
-                      ? getLowestPrice(this.props.product.offer_ids)
-                      : 0)
-                  ).toFixed(2)
-                }
-              />
+                      (this.props.product.total_sold /
+                        ((new Date().getTime() -
+                          new Date(
+                            this.props.product.tracking_since
+                          ).getTime()) /
+                          1000 /
+                          86400)) *
+                        30 *
+                        (this.props.product.offer_ids.length > 0
+                          ? getLowestPrice(this.props.product.offer_ids)
+                          : this.state.offers[0].price
+                        ).toFixed(2)
+                    )
+                  }
+                />
+              )}
             </Box>
           </Col>
         </Row>
-        {this.props.offers.map(offer => {
-          return (
-            <Box>
-              <Offer offer={offer} graphType={this.state.graphType} />
-            </Box>
-          );
-        })}
+        {!this.state.loading &&
+          this.state.offers.map((offer) => {
+            return (
+              <Box>
+                <Offer
+                  offer={offer}
+                  graphType={this.state.graphType}
+                  product={this.props.product}
+                />
+              </Box>
+            );
+          })}
         <Modal
           title="Profit Calculator"
           visible={this.state.visible}
@@ -233,7 +333,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             <Text>Bol.com Listing Price</Text>
             <InputNumber
               defaultValue={this.props.bolPrice}
-              formatter={value =>
+              formatter={(value) =>
                 `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
               onChange={this.handleChangeBolPrice}
@@ -243,7 +343,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             <Text>Packaging Costs</Text>
             <InputNumber
               defaultValue={this.props.packagingCosts}
-              formatter={value =>
+              formatter={(value) =>
                 `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
               onChange={this.handleChangePackagingCosts}
@@ -253,7 +353,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             <Text>Product Costs</Text>
             <InputNumber
               defaultValue={this.props.packagingCosts}
-              formatter={value =>
+              formatter={(value) =>
                 `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
               onChange={this.handleChangeProductCosts}
@@ -343,7 +443,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
             }}
           >
             <div>
@@ -397,7 +497,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
               bottom: 0,
               right: 0,
               width: '100%',
-              padding: 20
+              padding: 20,
             }}
           >
             <Search

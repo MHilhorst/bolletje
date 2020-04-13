@@ -10,7 +10,7 @@ import {
   Divider,
   Modal,
   Input,
-  Row
+  Row,
 } from 'antd';
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -18,22 +18,25 @@ export default class ProfileView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      profileModal: false
+      profileModal: false,
     };
     // this.handleChange = this.handleChange.bind(this);
   }
 
-  handleFirstName = e => {
+  handleFirstName = (e) => {
     this.props.onChange('firstName', e.target.value);
   };
-  handleLastName = e => {
+  handleLastName = (e) => {
     this.props.onChange('lastName', e.target.value);
   };
-  handleAddress = e => {
+  handleAddress = (e) => {
     this.props.onChange('address', e.target.value);
   };
-  handleZip = e => {
+  handleZip = (e) => {
     this.props.onChange('zip', e.target.value);
+  };
+  handleEmail = (e) => {
+    this.props.onChange('email', e.target.value);
   };
   showProfileEdit = () => {
     this.setState({ profileModal: true });
@@ -44,6 +47,18 @@ export default class ProfileView extends React.Component {
   };
   handleCancel = () => {
     this.setState({ profileModal: false });
+  };
+  handleOldPass = (e) => {
+    this.props.onChange('oldPass', e.target.value);
+  };
+  handleNewPass = (e) => {
+    this.props.onChange('newPass', e.target.value);
+  };
+  handleNewVerifyPass = (e) => {
+    this.props.onChange('newVerifyPass', e.target.value);
+  };
+  handleUpgrade = (e) => {
+    this.props.handleUpgrade();
   };
   render() {
     return (
@@ -62,7 +77,7 @@ export default class ProfileView extends React.Component {
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    marginTop: 10
+                    marginTop: 10,
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -83,19 +98,19 @@ export default class ProfileView extends React.Component {
                     <Button onClick={this.showProfileEdit}>Edit Profile</Button>
                   </div>
                 </div>
+              </TabPane>
+              <TabPane key="2" tab="Billing" disabled>
+                <div>
+                  <Text strong style={{ fontSize: 16, color: '#999' }}>
+                    Current Package{' '}
+                  </Text>
+                  <br />
+                  <Text strong style={{ fontSize: 20 }}>
+                    Free
+                  </Text>
+                </div>
                 <Divider />
-                <div>
-                  <Text>Premium History</Text>
-                </div>
-              </TabPane>
-              <TabPane key="2" tab="Billing">
-                <div>
-                  <Text strong>Payment Method</Text>
-                  {!this.props.user.premium && <div>asdsad</div>}
-                </div>
-              </TabPane>
-              <TabPane key="3" tab="Security">
-                <Text strong>Password</Text>
+                <Button onClick={() => this.handleUpgrade()}>Upgrade</Button>
               </TabPane>
             </Tabs>
           </Box>
@@ -106,6 +121,50 @@ export default class ProfileView extends React.Component {
           onOk={this.handleProfileEdit}
           onCancel={this.handleCancel}
         >
+          <div style={{ marginBottom: 10 }}>
+            <Text strong style={{ fontSize: 18 }}>
+              Account Information
+            </Text>
+          </div>
+          <Row gutter={16} style={{ marginBottom: 10 }}>
+            <Col span={24}>
+              <label>E-mail</label>
+              <Input
+                style={{ marginTop: 4 }}
+                onChange={this.handleEmail}
+                defaultValue={this.props.user.email}
+                disabled
+              />
+            </Col>
+          </Row>
+          <Row gutter={16} style={{ marginBottom: 10 }}>
+            <Col span={24}>
+              <label>Old Password</label>
+              <Input style={{ marginTop: 4 }} onChange={this.handleOldPass} />
+            </Col>
+          </Row>
+          <Row gutter={16} style={{ marginBottom: 10 }}>
+            <Col span={24}>
+              <label>New Password</label>
+              <Input style={{ marginTop: 4 }} onChange={this.handleNewPass} />
+            </Col>
+          </Row>
+          <Row gutter={16} style={{ marginBottom: 10 }}>
+            <Col span={24}>
+              <label>Retype New Password</label>
+              <Input
+                style={{ marginTop: 4 }}
+                onChange={this.handleNewVerifyPass}
+              />
+            </Col>
+          </Row>
+          <Divider />
+          <div style={{ marginBottom: 10 }}>
+            <Text strong style={{ fontSize: 18 }}>
+              Personal Information
+            </Text>
+          </div>
+
           <Row gutter={16} style={{ marginBottom: 10 }}>
             <Col span={12}>
               <label>First Name</label>

@@ -1,10 +1,11 @@
-import React from "react";
-import ProductSoldAnalyticsDetailedView from "./product-sold-analytics-detailed-view";
+import React from 'react';
+import ProductSoldAnalyticsDetailedView from './product-sold-analytics-detailed-view';
 import {
   getOffersTrackInfoOfProduct,
   getTrackedProduct,
-  getCommission
-} from "../../utils/bol";
+  getCommission,
+  deleteBolProduct,
+} from '../../utils/bol';
 export default class ProductSoldAnalyticsDetailedContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -12,7 +13,7 @@ export default class ProductSoldAnalyticsDetailedContainer extends React.Compone
       offers: null,
       product: null,
       packagingCosts: 0,
-      productCosts: 0
+      productCosts: 0,
     };
     this.onChange = this.onChange.bind(this);
     this.handleCommission = this.handleCommission.bind(this);
@@ -22,9 +23,9 @@ export default class ProductSoldAnalyticsDetailedContainer extends React.Compone
     this.setState({
       bolReceivePrice: commission.totalCost,
       bolCommissionPercentage: commission.percentage,
-      commissionReduction: commission.hasOwnProperty("reductions")
+      commissionReduction: commission.hasOwnProperty('reductions')
         ? commission.reductions[0]
-        : false
+        : false,
     });
   };
   async componentDidMount() {
@@ -36,6 +37,10 @@ export default class ProductSoldAnalyticsDetailedContainer extends React.Compone
   onChange = (key, value) => {
     this.setState({ [key]: value });
   };
+
+  deleteProduct = async () => {
+    await deleteBolProduct(this.state.product.product_id);
+  };
   render() {
     if (this.state.offers && this.state.product) {
       return (
@@ -44,7 +49,9 @@ export default class ProductSoldAnalyticsDetailedContainer extends React.Compone
           product={this.state.product}
           onChange={this.onChange}
           handleCommission={this.handleCommission}
+          deleteProduct={this.deleteProduct}
           {...this.state}
+          {...this.props}
         />
       );
     } else {

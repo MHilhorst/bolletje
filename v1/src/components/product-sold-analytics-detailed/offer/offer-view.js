@@ -1,6 +1,26 @@
 import React from 'react';
-import { Descriptions } from 'antd';
+import { Descriptions, Tag } from 'antd';
 import Chart from 'react-apexcharts';
+
+const checkActive = (active_offers, offerId, bol) => {
+  // let offer;
+  // if (bol === 'bol.com') {
+  //   let offerIdString = offerId.toString();
+  //   let lastChar = Number(offerIdString.substr(offerIdString.length - 1)) + 1;
+  //   offer = offerIdString.replace(/.$/, lastChar.toString());
+  // } else {
+  //   offer = offerId.toString();
+  // }
+  if (bol === 'bol.com' && active_offers.length > 0) {
+    return true;
+  }
+  // console.log(offer, active_offers);
+  if (active_offers.includes(offerId.toString())) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 export default class OfferView extends React.Component {
   constructor(props) {
@@ -10,37 +30,69 @@ export default class OfferView extends React.Component {
       options: {
         chart: {
           type: 'area',
-          height: 350
+          height: 350,
         },
         stroke: {
-          curve: 'stepline'
+          curve: 'stepline',
         },
         dataLabels: {
-          enabled: false
+          enabled: false,
         },
-        markers: {
-          size: 0,
-          style: 'hollow'
-        },
+
         xaxis: {
           type: 'datetime',
-          tickAmount: 6
+          tickAmount: 10,
+          min: this.props.offer.updates[0]
+            ? new Date(this.props.offer.updates[0].time_checked).getTime()
+            : null,
+          max:
+            this.props.offer.updates.length < 5
+              ? new Date(new Date().getTime() + 86400 * 10).getTime()
+              : new Date().getTime(),
+          // : this.props.offer.last_update
+          // ? new Date().getTime()
+          // : // ? new Date(
+          //   //     new Date(this.props.offer.last_update).getTime() + 86400 * 300
+          //   // ).getTime()
+          //   new Date().getTime(),
         },
         yaxis: {
           title: {
-            text: 'Inventory'
-          }
+            text: 'Inventory',
+          },
+          labels: {
+            style: {
+              color: '#8e8da4',
+            },
+            offsetX: 0,
+            formatter: (val, index) => {
+              return Math.round(Number(val));
+            },
+          },
         },
+        // points: [
+        //   {
+        //     x: new Date().getTime(),
+        //     y: 30,
+        //     marker: {
+        //       size: 80,
+        //     },
+        //     label: {
+        //       borderColor: '#FF4560',
+        //       text: 'Point Annotation',
+        //     },
+        //   },
+        // ],
         tooltip: {
           x: {
-            format: 'dd/MM/yyyy HH:mm'
+            format: 'dd/MM/yyyy HH:mm',
           },
           z: {
             title: 'Price:',
-            formatter: y => {
+            formatter: (y) => {
               return '€' + y;
-            }
-          }
+            },
+          },
         },
         fill: {
           type: 'gradient',
@@ -48,10 +100,10 @@ export default class OfferView extends React.Component {
             shadeIntensity: 1,
             opacityFrom: 0.7,
             opacityTo: 0.9,
-            stops: [0, 100]
-          }
-        }
-      }
+            stops: [0, 100],
+          },
+        },
+      },
       // selection: "one_year"
     };
   }
@@ -63,18 +115,21 @@ export default class OfferView extends React.Component {
   }
   async componentDidMount() {
     const data = await this.getGraphDatav2(this.props.offer.updates);
-
+    console.log(data);
     this.setState({
-      series: [{ data, name: 'Inventory' }]
+      series: [{ data, name: 'Inventory' }],
     });
   }
 
-  getGraphDatav2 = async data => {
-    const stock = [];
-    data.map(update => {
-      stock.push([update.time_checked, update.quantity, update.price]);
+  getGraphDatav2 = async (data) => {
+    const graphData = data.map((update, index) => {
+      // if (index === 0) {
+      //   return [update.time_checked, 0, update.price];
+      // }
+      return [update.time_checked, update.quantity, update.price];
     });
-    return stock;
+    graphData.unshift([graphData[0][0] - 1000, 0, graphData[0][2]]);
+    return graphData;
   };
 
   render() {
@@ -82,7 +137,32 @@ export default class OfferView extends React.Component {
       return (
         <>
           <Descriptions
-            title={this.props.offer.seller_display_name}
+            title={
+              checkActive(
+                this.props.product.active_offers,
+                this.props.offer.public_offer_id,
+                this.props.offer.seller_display_name
+              ) ? (
+                <>
+                  <span>{this.props.offer.seller_display_name} </span>
+                  {/* <Badge
+                    className="site-badge-count-109"
+                    count={'Active Offer'}
+                    style={{ backgroundColor: '#52c41a' }}
+                  /> */}
+                  <Tag color="green">Active offer</Tag>
+                </>
+              ) : (
+                <div>
+                  <span>{this.props.offer.seller_display_name} </span>
+                  {/* <Badge
+                    count={'Inactive Offer'}
+                    style={{ backgroundColor: '#faad14' }}
+                  /> */}
+                  <Tag color="orange">Inactive offer</Tag>
+                </div>
+              )
+            }
             bordered
             style={{ marginBottom: 30 }}
           >

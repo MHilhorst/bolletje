@@ -25,7 +25,11 @@ class RouteWrapper extends React.Component {
         Cookies.remove('token');
         this.props.history.push('/login');
       } else {
-        this.setState({ user: data.user, loading: false });
+        if (data.user.admin_account) {
+          this.setState({ user: data.user, loading: false });
+        } else {
+          this.props.history.push('/dashboard');
+        }
       }
     } else {
       this.props.history.push('/login');
@@ -39,7 +43,7 @@ class RouteWrapper extends React.Component {
         <Route
           {...rest}
           render={(props) => {
-            if (this.props.session) {
+            if (this.props.session && this.state.user.admin_account) {
               return (
                 <Layout {...this.props} {...props} {...this.state}>
                   <Component {...this.props} {...props} {...this.state} />
@@ -49,7 +53,7 @@ class RouteWrapper extends React.Component {
               return (
                 <Redirect
                   to={{
-                    pathname: '/login',
+                    pathname: '/dashboard',
                     state: { from: props },
                   }}
                 />

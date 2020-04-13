@@ -1,49 +1,72 @@
-import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import RouteWrapper from "./route-wrapper";
-import Dashboard from "../dashboard";
-import InventoryOverview from "../inventory-overview";
-import Orders from "../orders";
-import InventoryItemDetailed from "../inventory-item-detailed";
-import BaseLayout from "../../layouts/base-layout";
-import OrderDetailed from "../order-detailed";
-import PluginAliExpress from "../plugin-aliexpress";
-import Login from "../login";
-import CreateInventoryItem from "../create-inventory-item";
-import Loading from "../loading";
-import PriceChecker from "../price-checker";
-import Profile from "../profile";
-import ProductManagement from "../product-management";
-import ProductSoldAnalytics from "../product-sold-analytics";
-import ProductSoldAnalyticsDetailed from "../product-sold-analytics-detailed";
-import Cookies from "js-cookie";
-import config from "../../config";
-import SearchAnalytics from "../search-analytics";
-import CreateOffer from "../create-offer";
-const jwt = Cookies.get("token");
+import React from 'react';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Link,
+  Route,
+  Redirect,
+} from 'react-router-dom';
+import RouteWrapper from './route-wrapper';
+import AdminWrapper from './admin-wrapper';
+import AdminUsers from '../admin-users';
+import AdminProducts from '../admin-products';
+import AdminDashboard from '../admin-dashboard';
+import AdminOffersDetailed from '../admin-offers-detailed';
+import AdminUsersDetailed from '../admin-users-detailed';
+import AdminProductsDetailed from '../admin-products-detailed';
+import Dashboard from '../dashboard';
+// import InventoryOverview from '../inventory-overview';
+// import Orders from '../orders';
+// import InventoryItemDetailed from '../inventory-item-detailed';
+import BaseLayout from '../../layouts/base-layout';
+// import OrderDetailed from '../order-detailed';
+import Login from '../login';
+import Register from '../register';
+// import CreateInventoryItem from '../create-inventory-item';
+import Loading from '../loading';
+// import PriceChecker from '../price-checker';
+import Profile from '../profile';
+import ProductManagement from '../product-management';
+import ProductSoldAnalytics from '../product-sold-analytics';
+import ProductSoldAnalyticsDetailed from '../product-sold-analytics-detailed';
+import SearchAnalytics from '../search-analytics';
+import CreateOffer from '../create-offer';
+import { getSession } from '../../utils/auth';
+import LoginWrapper from './login-wrapper';
+import TrackNewProduct from '../track-new-product';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       session: null,
-      loading: true
+      loading: true,
+      redirect: false,
     };
   }
-  componentDidMount() {
-    fetch(`${config.host}/api/user`, {
-      method: "GET",
-      headers: {
-        Authorization: jwt
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        this.setState({ user: data.user, loading: false });
-      })
-      .catch(err => {
-        this.setState({ loading: false });
-      });
+  async componentDidMount() {
+    const session = await getSession();
+    if (session) {
+      this.setState({ session, loading: false });
+    } else {
+      this.setState({ loading: false });
+    }
+    // if (session) {
+    //   const response = await fetch(`${config.host}/api/user`, {
+    //     method: 'GET',
+    //     headers: {
+    //       Authorization: `Bearer ${session}`,
+    //     },
+    //   });
+    //   const data = await response.json();
+    //   if (response.status === 401) {
+    //     Cookies.remove('token');
+    //   } else {
+    //     this.setState({ loading: false, session, user: data.user });
+    //   }
+    // } else {
+    //   this.setState({ loading: false });
+    // }
   }
   render() {
     if (!this.state.loading) {
@@ -56,7 +79,15 @@ class App extends React.Component {
               component={Dashboard}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
+            />
+            <Route
+              exact
+              path="/"
+              render={() => {
+                return <Link to="/dashboard" />;
+              }}
             />
             <RouteWrapper
               exact
@@ -64,6 +95,7 @@ class App extends React.Component {
               component={SearchAnalytics}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
             />
             <RouteWrapper
@@ -72,6 +104,7 @@ class App extends React.Component {
               component={CreateOffer}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
             />
             <RouteWrapper
@@ -79,7 +112,15 @@ class App extends React.Component {
               path="/product-sold-analytics"
               component={ProductSoldAnalytics}
               layout={BaseLayout}
-              user={this.state.user}
+              session={this.state.session}
+              {...this.props}
+            />
+            <RouteWrapper
+              exact
+              path="/track-product"
+              component={TrackNewProduct}
+              layout={BaseLayout}
+              session={this.state.session}
               {...this.props}
             />
             <RouteWrapper
@@ -87,6 +128,7 @@ class App extends React.Component {
               component={ProductSoldAnalyticsDetailed}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
             />
             <RouteWrapper
@@ -94,14 +136,16 @@ class App extends React.Component {
               component={ProductManagement}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
-            />{" "}
-            <RouteWrapper
+            />{' '}
+            {/* <RouteWrapper
               exact
               path="/inventory-overview"
               component={InventoryOverview}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
             />
             <RouteWrapper
@@ -110,6 +154,7 @@ class App extends React.Component {
               component={InventoryItemDetailed}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
             />
             <RouteWrapper
@@ -118,22 +163,25 @@ class App extends React.Component {
               component={CreateInventoryItem}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
-            />
-            <RouteWrapper
+            /> */}
+            {/* <RouteWrapper
               exact
               path="/price-checker"
               component={PriceChecker}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
-            />
-            <RouteWrapper
+            /> */}
+            {/* <RouteWrapper
               exact
               path="/orders"
               component={Orders}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
             />
             <RouteWrapper
@@ -142,29 +190,96 @@ class App extends React.Component {
               component={OrderDetailed}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
-            />
-            <RouteWrapper
-              exact
-              path="/plugin/aliexpress"
-              component={PluginAliExpress}
-              layout={BaseLayout}
-              user={this.state.user}
-              {...this.props}
-            />
+            /> */}
             <RouteWrapper
               exact
               path="/profile"
               component={Profile}
               layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
               {...this.props}
             />
-            <Route
+            <LoginWrapper
               exact
               path="/login"
               component={Login}
+              {...this.props}
+              session={this.state.session}
+            />
+            <Route
+              exact
+              path="/register"
+              component={Register}
+              render={(props) => {
+                if (this.state.user) {
+                  return (
+                    <Redirect
+                      to={{
+                        pathname: '/dashboard',
+                      }}
+                    />
+                  );
+                } else {
+                  return <Login {...this.props} {...props} />;
+                }
+              }}
+            />
+            <AdminWrapper
+              exact
+              path="/admin/users"
+              component={AdminUsers}
+              layout={BaseLayout}
               user={this.state.user}
+              session={this.state.session}
+              {...this.props}
+            />
+            <AdminWrapper
+              exact
+              path="/admin/users/:id"
+              component={AdminUsersDetailed}
+              layout={BaseLayout}
+              user={this.state.user}
+              session={this.state.session}
+              {...this.props}
+            />
+            <AdminWrapper
+              exact
+              path="/admin/products"
+              component={AdminProducts}
+              layout={BaseLayout}
+              user={this.state.user}
+              session={this.state.session}
+              {...this.props}
+            />
+            <AdminWrapper
+              exact
+              path="/admin/products/:id"
+              component={AdminProductsDetailed}
+              layout={BaseLayout}
+              user={this.state.user}
+              session={this.state.session}
+              {...this.props}
+            />
+            <AdminWrapper
+              exact
+              path="/admin/offers/:id"
+              component={AdminOffersDetailed}
+              layout={BaseLayout}
+              user={this.state.user}
+              session={this.state.session}
+              {...this.props}
+            />
+            <AdminWrapper
+              exact
+              path="/admin/dashboard"
+              component={AdminDashboard}
+              layout={BaseLayout}
+              user={this.state.user}
+              session={this.state.session}
+              {...this.props}
             />
           </Switch>
         </Router>
