@@ -25,10 +25,10 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, 'access.log'),
-  { flags: 'a' }
-);
+// const accessLogStream = fs.createWriteStream(
+//   path.join(__dirname, 'access.log'),
+//   { flags: 'a' }
+// );
 // app.use(assignId);
 app.use(morgan('dev'));
 app.use(morgan('common', { stream: accessLogStream }));
