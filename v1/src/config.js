@@ -1,5 +1,5 @@
 const config = {
-  host: 'http://app.snapse.nl',
+  host: 'https://app.snapse.nl',
   bol: {
     clientId: 'd061ce7d-ae6c-41fa-af56-924b270a8ecd',
     secret:
