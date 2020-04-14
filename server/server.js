@@ -31,7 +31,7 @@ const corsOptions = {
 // );
 // app.use(assignId);
 app.use(morgan('dev'));
-app.use(morgan('common', { stream: accessLogStream }));
+// app.use(morgan('common', { stream: accessLogStream }));
 app.use(cors(corsOptions));
 app.use(compression());
 app.use(passport.initialize());
