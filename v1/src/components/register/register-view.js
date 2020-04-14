@@ -6,7 +6,6 @@ import {
   LoginHeader,
   LoginInput,
 } from '../../styles/style';
-import config from '../../config';
 import { setToken } from '../../utils/auth';
 
 const { Title, Text } = Typography;
@@ -32,48 +31,22 @@ class RegisterView extends React.Component {
     this.setState({ password: e.target.value });
   };
 
-  // handleSubmit = () => {
-  //   this.setState({ loading: true, errorLogin: false });
-  //   fetch(`${config.host}/api/auth/login`, {
-  //     method: 'POST',
-  //     headers: {
-  //       Accept: 'application/json',
-  //       'Content-Type': 'application/json'
-  //     },
-  //     body: JSON.stringify({
-  //       email: this.state.email,
-  //       password: this.state.password
-  //     })
-  //   })
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       if (data.token) {
-  //         const { token } = data;
-  //         Cookies.set('token', token, { expires: 1 });
-  //         this.props.history.push('/dashboard');
-  //       }
-  //       if (data.error) {
-  //         this.setState({ loading: false, errorLogin: true });
-  //       }
-  //     })
-  //     .catch(err => {
-  //       console.log(err);
-  //     });
-  // };
-
   handleSubmit = async () => {
     this.setState({ loading: true, errorLogin: false });
-    const response = await fetch(`${config.host}/api/auth/register`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: this.state.email,
-        password: this.state.password,
-      }),
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_API_HOST}/api/auth/register`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: this.state.email,
+          password: this.state.password,
+        }),
+      }
+    );
     const data = await response.json();
     console.log(data.token);
     if (setToken(data.token)) {

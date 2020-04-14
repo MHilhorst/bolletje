@@ -25,6 +25,8 @@ export default class AdminDashboardContainer extends React.Component {
     this.setState({
       monitorStatus: data.status,
       monitorNextRun: data.next_run,
+      monitorStartTime: data.start_tracking_time,
+      monitorAPICalls: data.monitor_api_calls,
     });
     if (data.hasOwnProperty('status') && data.status) {
       this.setState({ running: true });

@@ -124,7 +124,12 @@ router.post('/monitor', async (req, res) => {
 });
 router.get('/monitor-status', async (req, res) => {
   const data = getCronJobStatus();
-  res.json({ status: data.status, next_run: data.nextRun });
+  res.json({
+    status: data.status,
+    next_run: data.nextRun,
+    start_tracking_time: data.startTrackingTime,
+    monitor_api_calls: data.totalAPICalls,
+  });
 });
 
 module.exports = router;

@@ -12,6 +12,10 @@ const countCalls = (amount) => {
 };
 const showTotalCalls = () => {
   console.log(totalRequests);
+  return totalRequests;
+};
+const resetTotalCalls = () => {
+  totalRequests = 0;
 };
 const getOtherOffers = async (ean) => {
   const productId = await getProductIdWithEAN(ean);
@@ -261,3 +265,5 @@ module.exports.saveProduct = saveProduct;
 module.exports.getPriceOneItem = getPriceOneItem;
 module.exports.updateProductOffers = updateProductOffers;
 module.exports.showTotalCalls = showTotalCalls;
+module.exports.resetTotalCalls = resetTotalCalls;
+module.exports.totalRequests = totalRequests;

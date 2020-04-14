@@ -1,10 +1,9 @@
 import Cookies from 'js-cookie';
 import { getSession } from './auth';
-import config from '../config';
 const jwt = Cookies.get('token');
 
 export const getUserInformation = async () => {
-  return fetch(`${config.host}/api/user`, {
+  return fetch(`${process.env.REACT_APP_API_HOST}/api/user`, {
     method: 'GET',
     headers: {
       Authorization: jwt,
@@ -17,7 +16,7 @@ export const getUserInformation = async () => {
 };
 
 export const updateUserInformation = async (data) => {
-  return fetch(`${config.host}/api/user`, {
+  return fetch(`${process.env.REACT_APP_API_HOST}/api/user`, {
     method: 'PUT',
     headers: {
       Authorization: jwt,
@@ -33,20 +32,23 @@ export const updateUserInformation = async (data) => {
 
 export const getMessages = async () => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/user/timeline`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/user/timeline`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   return await response.json();
 };
 
 export const deleteMessage = async (messageId) => {
   const jwt = await getSession();
   const response = await fetch(
-    `${config.host}/api/user/timeline/${messageId}`,
+    `${process.env.REACT_APP_API_HOST}/api/user/timeline/${messageId}`,
     {
       method: 'DELETE',
       headers: {

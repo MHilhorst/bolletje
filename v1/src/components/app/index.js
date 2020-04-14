@@ -51,22 +51,6 @@ class App extends React.Component {
     } else {
       this.setState({ loading: false });
     }
-    // if (session) {
-    //   const response = await fetch(`${config.host}/api/user`, {
-    //     method: 'GET',
-    //     headers: {
-    //       Authorization: `Bearer ${session}`,
-    //     },
-    //   });
-    //   const data = await response.json();
-    //   if (response.status === 401) {
-    //     Cookies.remove('token');
-    //   } else {
-    //     this.setState({ loading: false, session, user: data.user });
-    //   }
-    // } else {
-    //   this.setState({ loading: false });
-    // }
   }
   render() {
     if (!this.state.loading) {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import config from '../../../config';
 import Loading from '../../loading';
 class RouteWrapper extends React.Component {
   constructor(props) {
@@ -13,12 +12,15 @@ class RouteWrapper extends React.Component {
   }
   async componentDidMount() {
     if (this.props.session) {
-      const response = await fetch(`${config.host}/api/user`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${this.props.session}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/api/user`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.props.session}`,
+          },
+        }
+      );
       const data = await response.json();
       if (response.status === 401) {
         console.log('removing');

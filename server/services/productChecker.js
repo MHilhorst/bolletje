@@ -4,6 +4,7 @@ const {
   getPriceOneItem,
   updateProductOffers,
   showTotalCalls,
+  resetTotalCalls,
 } = require('./openApiBolServices');
 const Product = require('../models/Product');
 const CronJob = require('cron').CronJob;
@@ -169,8 +170,12 @@ const analyzeStock = async (offerId, offer, priceOneUnit) => {
 //   }
 // };
 
+let startTrackingTime;
+
 const startCronJob = () => {
   cronMonitor.start();
+  startTrackingTime = Date.now();
+  resetTotalCalls();
   return true;
 };
 
@@ -185,7 +190,12 @@ const cronMonitor = new CronJob('0 */10 * * * *', () => {
 });
 
 const getCronJobStatus = () => {
-  return { status: cronMonitor.running, nextRun: cronMonitor.nextDates() };
+  return {
+    status: cronMonitor.running,
+    nextRun: cronMonitor.nextDates(),
+    startTrackingTime: startTrackingTime,
+    totalAPICalls: showTotalCalls(),
+  };
 };
 
 const monitor = async (productId) => {

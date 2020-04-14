@@ -4,6 +4,17 @@ import { Box } from '../../styles/style';
 
 const { Title } = Typography;
 const { TextArea } = Input;
+
+const getFormattedDate = (date) => {
+  const dd = date.getDate();
+  const mm = date.getMonth() + 1;
+  const yyyy = date.getFullYear();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  return dd + '-' + mm + '-' + yyyy + ' ' + hours + ':' + minutes;
+};
+
 export default class AdminDashboardView extends React.Component {
   constructor(props) {
     super(props);
@@ -47,6 +58,47 @@ export default class AdminDashboardView extends React.Component {
                     this.props.monitorNextRun
                       .replace(/T/, ' ') // replace T with a space
                       .replace(/\..+/, '') // delete the dot and everything after
+                  }
+                />
+              </Box>
+            </Col>
+            <Col span={4}>
+              <Box>
+                <Statistic
+                  title="Monitor Running Since"
+                  value={
+                    getFormattedDate(new Date(this.props.monitorStartTime))
+                    // .replace(/T/, ' ') // replace T with a space
+                    // .replace(/\..+/, '') // delete the dot and everything after}
+                  }
+                />
+              </Box>
+            </Col>
+            <Col span={4}>
+              <Box>
+                <Statistic
+                  title="API CALLS"
+                  value={
+                    this.props.monitorAPICalls
+                    // .replace(/T/, ' ') // replace T with a space
+                    // .replace(/\..+/, '') // delete the dot and everything after}
+                  }
+                />
+              </Box>
+            </Col>
+            <Col span={4}>
+              <Box>
+                <Statistic
+                  title="Average Calls / Hour"
+                  value={
+                    this.props.monitorAPICalls /
+                    (((new Date().getTime() -
+                      new Date(this.props.monitorStartTime).getTime()) /
+                      1000) *
+                      60 *
+                      60)
+                    // .replace(/T/, ' ') // replace T with a space
+                    // .replace(/\..+/, '') // delete the dot and everything after}
                   }
                 />
               </Box>

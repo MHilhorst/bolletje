@@ -1,16 +1,18 @@
-import config from '../config';
 import { getSession } from './auth';
 
 export const reloadOffers = async () => {
   const jwt = await getSession();
   if (jwt) {
-    const response = await fetch(`${config.host}/api/bol/offers/update`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
-      },
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_API_HOST}/api/bol/offers/update`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    );
     const data = await response.json();
     return data;
   } else {
@@ -28,14 +30,17 @@ export const createOffer = async (
   const jwt = await getSession();
   const data = { ean, condition, price, stockAmount, fulfilment };
   if (jwt) {
-    const response = await fetch(`${config.host}/api/bol/offer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_API_HOST}/api/bol/offer`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
     const responseData = await response.json();
     return responseData;
   }
@@ -44,7 +49,7 @@ export const createOffer = async (
 // export const getOffer = (id) => {
 //   const jwt = await getSession();
 //   if (jwt) {
-//     fetch(`${config.host}/api/bol/offer/${id}`, {
+//     fetch(`${process.env.REACT_APP_API_HOST}/api/bol/offer/${id}`, {
 //       method: 'GET',
 //       headers: {
 //         'Content-Type': 'application/json',
@@ -59,78 +64,96 @@ export const createOffer = async (
 // };
 export const getTrackedProducts = async () => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/products`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/products`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   const data = await response.json();
   return data.products;
 };
 export const getTrackedProduct = async (productId) => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/products/${productId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/products/${productId}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   const data = await response.json();
   return data;
 };
 
 export const trackNewProduct = async (productId) => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/products`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-    body: JSON.stringify({ productId }),
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/products`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({ productId }),
+    }
+  );
   return await response.json();
 };
 
 export const getOfferTrackInfo = async (id) => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/offer/track/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/offer/track/${id}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   const data = await response.json();
   return data;
 };
 
 export const getOffersTrackInfoOfProduct = async (id) => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/product/offers/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/product/offers/${id}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   const data = await response.json();
   return data.offers;
 };
 
 export const updateAutoOffer = async (bodyData) => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/track/offer`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-    body: JSON.stringify(bodyData),
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/track/offer`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify(bodyData),
+    }
+  );
   const data = await response.json();
   return data;
 };
@@ -138,7 +161,7 @@ export const updateAutoOffer = async (bodyData) => {
 export const getAutoOfferInfo = async (autoOfferId) => {
   const jwt = await getSession();
   const response = await fetch(
-    `${config.host}/api/track/offer/${autoOfferId}`,
+    `${process.env.REACT_APP_API_HOST}/api/track/offer/${autoOfferId}`,
     {
       method: 'GET',
       headers: {
@@ -152,47 +175,56 @@ export const getAutoOfferInfo = async (autoOfferId) => {
 };
 export const getBolOfferInfo = async (bolOfferId) => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/track/offer/${bolOfferId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/track/offer/${bolOfferId}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   const data = await response.json();
   return data;
 };
 
 export const getUserOwnOffers = async () => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/offers`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/offers`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   const data = await response.json();
   return data;
 };
 
 export const getCommission = async (ean, price) => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/commission`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-    body: JSON.stringify({ ean, price }),
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/commission`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({ ean, price }),
+    }
+  );
   const data = await response.json();
   return data;
 };
 
 export const getBolOpenOrders = async () => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/order`, {
+  const response = await fetch(`${process.env.REACT_APP_API_HOST}/api/order`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -205,13 +237,16 @@ export const getBolOpenOrders = async () => {
 
 export const getBolOffers = async () => {
   const jwt = await getSession();
-  const response = await fetch(`${config.host}/api/bol/v2/offers`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/v2/offers`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
   const data = await response.json();
   return data;
 };
@@ -219,7 +254,7 @@ export const getBolOffers = async () => {
 export const deleteBolProduct = async (product_id) => {
   const jwt = await getSession();
   const response = await fetch(
-    `${config.host}/api/bol/products/${product_id}`,
+    `${process.env.REACT_APP_API_HOST}/api/bol/products/${product_id}`,
     {
       method: 'DELETE',
       headers: {

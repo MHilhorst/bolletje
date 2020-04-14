@@ -1,33 +1,41 @@
 import Cookies from 'js-cookie';
-import config from '../config';
 
 export const getUserInventoryItems = async () => {
   const jwt = Cookies.get('token');
-  const response = await fetch(`${config.host}/api/inventory/`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', Authorization: jwt }
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/inventory/`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', Authorization: jwt },
+    }
+  );
   const data = await response.json();
   return data;
 };
 
-export const setNewInventoryItem = async body => {
+export const setNewInventoryItem = async (body) => {
   const jwt = Cookies.get('token');
-  const response = await fetch(`${config.host}/api/inventory/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: jwt },
-    body: JSON.stringify(body)
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/inventory/`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: jwt },
+      body: JSON.stringify(body),
+    }
+  );
   const data = await response.json();
   return data;
 };
 
-export const deleteInventoryItem = async id => {
+export const deleteInventoryItem = async (id) => {
   const jwt = Cookies.get('token');
-  const response = await fetch(`${config.host}/api/inventory/${id}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', Authorization: jwt }
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/inventory/${id}`,
+    {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', Authorization: jwt },
+    }
+  );
   const data = await response.json();
   return data;
 };
@@ -35,11 +43,11 @@ export const deleteInventoryItem = async id => {
 export const setBolOfferOfInventoryItem = async (inventoryItemId, bolId) => {
   const jwt = Cookies.get('token');
   const response = await fetch(
-    `${config.host}/api/inventory/${inventoryItemId}`,
+    `${process.env.REACT_APP_API_HOST}/api/inventory/${inventoryItemId}`,
     {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: jwt },
-      body: JSON.stringify({ bolId: bolId })
+      body: JSON.stringify({ bolId: bolId }),
     }
   );
   const data = await response.json();
@@ -49,11 +57,11 @@ export const setBolOfferOfInventoryItem = async (inventoryItemId, bolId) => {
 export const setStockOfInventoryItem = async (inventoryItemId, stock) => {
   const jwt = Cookies.get('token');
   const response = await fetch(
-    `${config.host}/api/inventory/${inventoryItemId}`,
+    `${process.env.REACT_APP_API_HOST}/api/inventory/${inventoryItemId}`,
     {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: jwt },
-      body: JSON.stringify({ stock })
+      body: JSON.stringify({ stock }),
     }
   );
   const data = await response.json();
@@ -66,37 +74,40 @@ export const setProductNameOfInventoryItem = async (
 ) => {
   const jwt = Cookies.get('token');
   const response = await fetch(
-    `${config.host}/api/inventory/${inventoryItemId}`,
+    `${process.env.REACT_APP_API_HOST}/api/inventory/${inventoryItemId}`,
     {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: jwt },
-      body: JSON.stringify({ productName })
+      body: JSON.stringify({ productName }),
     }
   );
   const data = await response.json();
   return data;
 };
 
-export const deleteBolOfferOfInventoryItem = async inventoryItemId => {
+export const deleteBolOfferOfInventoryItem = async (inventoryItemId) => {
   const jwt = Cookies.get('token');
   const response = await fetch(
-    `${config.host}/api/inventory/${inventoryItemId}`,
+    `${process.env.REACT_APP_API_HOST}/api/inventory/${inventoryItemId}`,
     {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: jwt },
-      body: JSON.stringify({ removeBolId: true })
+      body: JSON.stringify({ removeBolId: true }),
     }
   );
   const data = await response.json();
   return data;
 };
 
-export const getBolOfferOfInventoryItem = async bolId => {
+export const getBolOfferOfInventoryItem = async (bolId) => {
   const jwt = Cookies.get('token');
-  const response = await fetch(`${config.host}/api/bol/offer/${bolId}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', Authorization: jwt }
-  });
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/bol/offer/${bolId}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', Authorization: jwt },
+    }
+  );
   const data = await response.json();
   return data;
 };
