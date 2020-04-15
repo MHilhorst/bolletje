@@ -50,7 +50,7 @@ export default class AdminUsersDetailedView extends React.Component {
               {this.props.childUser.bol_track_items.map((item) => {
                 return (
                   <>
-                    <span>{item}</span>
+                    <a href={`/admin/products/${item}`}>{item}</a>
                     <br />
                   </>
                 );
