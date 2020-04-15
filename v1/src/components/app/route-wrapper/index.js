@@ -25,7 +25,8 @@ class RouteWrapper extends React.Component {
       if (response.status === 401) {
         console.log('removing');
         Cookies.remove('token');
-        this.props.history.push('/login');
+        // this.props.history.push('/login');
+        window.location.reload();
       } else {
         this.setState({ user: data.user, loading: false });
       }
