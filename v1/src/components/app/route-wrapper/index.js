@@ -32,6 +32,7 @@ class RouteWrapper extends React.Component {
       }
     } else {
       this.props.history.push('/login');
+      // window.location.replace('/login');
     }
   }
   render() {

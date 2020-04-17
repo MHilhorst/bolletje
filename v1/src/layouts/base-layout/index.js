@@ -2,6 +2,7 @@ import React from 'react';
 import { Layout, Menu, Icon } from 'antd';
 import { HeaderLogo } from '../../styles/style';
 import NavigationBar from '../../components/navigation-bar';
+import { UndoOutlined } from '@ant-design/icons';
 const { Sider, Header, Content } = Layout;
 const { SubMenu } = Menu;
 class BaseLayout extends React.Component {
@@ -69,6 +70,14 @@ class BaseLayout extends React.Component {
                 <span>Track New Product</span>
               </Menu.Item>
             </SubMenu>
+            <Menu.Item
+              key="5"
+              onClick={() => this.props.history.push('/price-checker')}
+            >
+              <UndoOutlined />
+              <span>Price Checker</span>
+            </Menu.Item>
+
             {/* <Menu.Item
               key="5"
               onClick={() => this.props.history.push('/price-checker')}

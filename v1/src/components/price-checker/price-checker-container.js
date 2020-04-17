@@ -2,12 +2,10 @@ import React from 'react';
 import PriceCheckerView from './price-checker-view';
 import {
   reloadOffers,
-  updateAutoOffer,
   getUserOwnOffers,
   getCommission,
-} from '../../utils/bol';
-
-import { findSeller } from '../../utils/bol';
+  updateOffers,
+} from '../../utils/repricer';
 
 export default class PriceCheckerContainer extends React.Component {
   constructor(props) {
@@ -19,95 +17,30 @@ export default class PriceCheckerContainer extends React.Component {
     };
     this.handleSubmit = this.handleSubmit.bind(this);
   }
+
   onChange = (key, value) => {
     this.setState({ [key]: value });
   };
 
-  handleSubmit = async (bolOfferId) => {
-    const data = {
-      bolOfferId,
-    };
-    if (typeof this.state.autoPriceChanger !== 'undefined')
-      data.autoTrack = this.state.autoPriceChanger;
-    if (this.state.minProfit) data.minProfit = this.state.minProfit;
-    if (this.state.minListingPrice)
-      data.minListingPrice = this.state.minListingPrice;
-    if (this.state.additionalCosts)
-      data.additionalCosts = this.state.additionalCosts;
-    if (this.state.priceUpdate) data.priceUpdate = this.state.priceUpdate;
-    if (this.state.stockUpdate) data.stockUpdate = this.state.stockUpdate;
-    if (this.state.priceChangeAmount)
-      data.priceChangeAmount = this.state.priceChangeAmount;
-    data.offerId = this.state.currentOfferId;
-    const updated = await updateAutoOffer(data);
-    if (updated) window.location.reload();
+  handleSubmit = async () => {
+    await updateOffers();
   };
 
   async componentDidMount() {
-    // const offerTableSchema = [];
-    const offers = await getUserOwnOffers();
-    const offerTableSchema = offers.result.map((offer, index) => {
-      try {
-        if (!offer.offerData.hasOwnProperty('offers')) {
-          return null;
-        } else {
-          const currentRank = findSeller(
-            offer.offerData.offers,
-            this.props.user.bol_shop_name
-          );
-          return {
-            key: index,
-            productName: offer.store.productTitle,
-            ean: offer.ean,
-            currentPrice: offer.pricing.bundlePrices[0].price,
-            currentStock: offer.stock.amount,
-            totalSellers: offer.offerData.offers.length,
-            offerRank: currentRank,
-            offerInfo: offer,
-            liveTracking: offer.autoOffer.auto_track,
-          };
-        }
-      } catch {}
+    const data = await getUserOwnOffers();
+    console.log(data);
+    const offerTableSchema = data.offers.map((offer, index) => {
+      return {
+        key: index,
+        ean: offer.ean,
+        productName: offer.product_title,
+        totalSellers: offer.offers_visible.length,
+        currentPrice: offer.price,
+        currentStock: offer.stock,
+      };
     });
-    if (offers.result.length >= 1) {
-      this.setState({
-        offers: offers.result,
-        tableOffers: offerTableSchema,
-        loadingOffers: false,
-      });
-    }
+    this.setState({ tableOffers: offerTableSchema });
   }
-
-  // offers.result.map(offer => {
-  //   try {
-  //     if (!offer.offerData.hasOwnProperty('offers')) {
-  //     } else {
-  //       const currentRank = findSeller(
-  //         offer.offerData.offers,
-  //         this.props.user.bol_shop_name
-  //       );
-  //       offerKey += 1;
-  //       offerTableSchema.push({
-  //         key: offerKey,
-  //         productName: offer.store.productTitle,
-  //         ean: offer.ean,
-  //         currentPrice: offer.pricing.bundlePrices[0].price,
-  //         currentStock: offer.stock.amount,
-  //         totalSellers: offer.offerData.offers.length,
-  //         offerRank: currentRank,
-  //         offerInfo: offer,
-  //         liveTracking: offer.autoOffer.auto_track
-  //       });
-  //     }
-  //   } catch {}
-  // });
-  // if (offers.result.length >= 1) {
-  //   this.setState({
-  //     offers: offers.result,
-  //     tableOffers: offerTableSchema,
-  //     loadingOffers: false
-  //   });
-  // }
 
   handleCommission = async (ean, price, minListing) => {
     if (!minListing) {
@@ -126,38 +59,15 @@ export default class PriceCheckerContainer extends React.Component {
       });
     }
   };
+
   handleReloadOffers = async () => {
     this.setState({ loadingOffers: true });
     const offers = await reloadOffers();
     if (offers) {
-      const offerTableSchema = [];
-      let offerKey = 0;
-      offers.result.map((offer) => {
-        const currentRank = findSeller(
-          offer.offerData.offers,
-          this.props.user.bol_shop_name
-        );
-        offerKey += 1;
-        offerTableSchema.push({
-          key: offerKey,
-          productName: offer.store.productTitle,
-          ean: offer.ean,
-          currentPrice: offer.pricing.bundlePrices[0].price,
-          currentStock: offer.stock.amount,
-          totalSellers: offer.offerData.offers.length,
-          offerRank: currentRank,
-          offerInfo: offer,
-        });
-      });
-      if (offers.result.length >= 1) {
-        this.setState({
-          offers: offers.result,
-          tableOffers: offerTableSchema,
-          loadingOffers: false,
-        });
-      }
+      this.setState({ loadingOffers: false });
     }
   };
+
   render() {
     if (this.state.offers && this.state.tableOffers) {
       return (

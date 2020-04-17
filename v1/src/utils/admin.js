@@ -214,3 +214,52 @@ export const getStatusMonitor = async () => {
   );
   return await response.json();
 };
+
+export const startMonitorRepricer = async () => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/admin/monitor-repricer`,
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({ start: true }),
+    }
+  );
+  return await response.json();
+};
+
+export const stopMonitorRepricer = async () => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/admin/monitor-repricer`,
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({ stop: true }),
+    }
+  );
+  return await response.json();
+};
+export const getStatusMonitorRepricer = async () => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/admin/monitor-status-repricer`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
+  return await response.json();
+};

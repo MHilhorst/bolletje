@@ -25,6 +25,10 @@ export default class AdminDashboardView extends React.Component {
     this.props.handleMonitor();
   };
 
+  handleMonitorRepricer = async () => {
+    this.props.handleMonitorRepricer();
+  };
+
   handleBroadcast = async () => {
     this.props.handleBroadcast();
   };
@@ -37,8 +41,8 @@ export default class AdminDashboardView extends React.Component {
   render() {
     return (
       <>
-        {this.props.monitorStatus && (
-          <Row gutter={[16, 16]}>
+        <Row gutter={[16, 16]}>
+          {this.props.monitorStatus && (
             <Col span={4}>
               <Box>
                 <Statistic
@@ -50,6 +54,8 @@ export default class AdminDashboardView extends React.Component {
                 />
               </Box>
             </Col>
+          )}
+          {this.props.monitorStatus && (
             <Col span={4}>
               <Box>
                 <Statistic
@@ -62,6 +68,8 @@ export default class AdminDashboardView extends React.Component {
                 />
               </Box>
             </Col>
+          )}{' '}
+          {this.props.monitorStatus && (
             <Col span={4}>
               <Box>
                 <Statistic
@@ -74,6 +82,8 @@ export default class AdminDashboardView extends React.Component {
                 />
               </Box>
             </Col>
+          )}{' '}
+          {this.props.monitorStatus && (
             <Col span={4}>
               <Box>
                 <Statistic
@@ -86,6 +96,8 @@ export default class AdminDashboardView extends React.Component {
                 />
               </Box>
             </Col>
+          )}{' '}
+          {this.props.monitorStatus && (
             <Col span={4}>
               <Box>
                 <Statistic
@@ -103,11 +115,28 @@ export default class AdminDashboardView extends React.Component {
                 />
               </Box>
             </Col>
-          </Row>
-        )}
+          )}
+          <Col span={4}>
+            <Box>
+              <Statistic
+                title="Repricer Monitor Status"
+                value={this.props.monitorStatusRepricer ? 'Running' : 'Offline'}
+                valueStyle={
+                  this.props.monitorStatusRepricer ? { color: '#3f8600' } : null
+                }
+              />
+            </Box>
+          </Col>
+        </Row>
+
         <Box>
           <Button onClick={this.handleMonitor}>
             {this.props.monitorStatus ? 'Stop Monitor' : 'Start Monitor'}
+          </Button>
+          <Button onClick={this.handleMonitorRepricer}>
+            {this.props.monitorStatusRepricer
+              ? 'Stop Repricer Monitor'
+              : 'Start Repricer Monitor'}
           </Button>
         </Box>
         <Box>

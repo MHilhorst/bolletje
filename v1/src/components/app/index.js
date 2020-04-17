@@ -24,7 +24,7 @@ import Login from '../login';
 import Register from '../register';
 // import CreateInventoryItem from '../create-inventory-item';
 import Loading from '../loading';
-// import PriceChecker from '../price-checker';
+import PriceChecker from '../price-checker';
 import Profile from '../profile';
 import ProductManagement from '../product-management';
 import ProductSoldAnalytics from '../product-sold-analytics';
@@ -150,7 +150,7 @@ class App extends React.Component {
               session={this.state.session}
               {...this.props}
             /> */}
-            {/* <RouteWrapper
+            <RouteWrapper
               exact
               path="/price-checker"
               component={PriceChecker}
@@ -158,7 +158,7 @@ class App extends React.Component {
               user={this.state.user}
               session={this.state.session}
               {...this.props}
-            /> */}
+            />
             {/* <RouteWrapper
               exact
               path="/orders"

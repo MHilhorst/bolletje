@@ -1,17 +1,17 @@
 import React from 'react';
-import { Box, ModalSwitchItem } from '../../styles/style';
+import { Box } from '../../styles/style';
 import {
   Button,
   Table,
-  Modal,
+  // Modal,
   Tag,
-  Switch,
-  Typography,
-  Divider,
-  InputNumber
+  // Switch,
+  // Typography,
+  // Divider,
+  // InputNumber,
 } from 'antd';
 import { getAutoOfferInfo } from '../../utils/bol';
-const { Text } = Typography;
+// const { Text } = Typography;
 
 const WAIT_INTERVAL = 1000;
 
@@ -20,54 +20,54 @@ export default class PriceCheckerView extends React.Component {
     super(props);
     this.state = {
       showModal: false,
-      selectedOffer: null
+      selectedOffer: null,
     };
     this.columns = [
       {
         title: 'Product Name',
         dataIndex: 'productName',
-        key: 'productName'
+        key: 'productName',
       },
       {
         title: 'Live tracking',
         dataIndex: 'liveTracking',
         key: 'liveTracking',
-        render: value => {
+        render: (value) => {
           if (value) return <Tag color="blue">Tracking</Tag>;
-        }
+        },
       },
       {
         title: 'Current Price',
         dataIndex: 'currentPrice',
-        key: 'currentPrice'
+        key: 'currentPrice',
       },
       {
         title: 'Current Stock',
         dataIndex: 'currentStock',
-        key: 'currentStock'
+        key: 'currentStock',
       },
       {
         title: 'Total sellers',
         dataIndex: 'totalSellers',
-        key: 'totalSellers'
+        key: 'totalSellers',
       },
       {
         title: 'Offer Rank',
         dataIndex: 'offerRank',
-        key: 'offerRank'
+        key: 'offerRank',
       },
       {
         title: 'Best Offer',
         dataIndex: 'bestOffer',
         key: 'bestOffer',
-        render: value => {
+        render: (value) => {
           return <Tag color="green">Currently top offer</Tag>;
-        }
+        },
       },
       {
         title: 'Configure',
         key: 'configure',
-        render: value => (
+        render: (value) => (
           <span>
             <span onClick={() => this.handleModal(value)}>Configure</span>
             <br />
@@ -81,8 +81,8 @@ export default class PriceCheckerView extends React.Component {
               View
             </span>
           </span>
-        )
-      }
+        ),
+      },
     ];
     this.timer = null;
     this.minListingTimer = null;
@@ -92,7 +92,7 @@ export default class PriceCheckerView extends React.Component {
     this.handleCancel = this.handleCancel.bind(this);
     this.handleChangeAutoPrice = this.handleChangeAutoPrice.bind(this);
   }
-  handleModal = async e => {
+  handleModal = async (e) => {
     const autoOfferInfo = await getAutoOfferInfo(e.offerInfo.autoOffer._id);
     this.props.onChange('currentOfferId', autoOfferInfo.offer_id);
     this.props.onChange('minProfit', autoOfferInfo.min_profit);
@@ -113,16 +113,16 @@ export default class PriceCheckerView extends React.Component {
   handleCancel = () => {
     this.setState({ showModal: false });
   };
-  handleChangeAutoPrice = checked => {
+  handleChangeAutoPrice = (checked) => {
     this.props.onChange('autoPriceChanger', checked);
   };
-  handleChangeMinProfit = e => {
+  handleChangeMinProfit = (e) => {
     this.props.onChange('minProfit', e);
   };
-  handleChangePriceChangeAmount = e => {
+  handleChangePriceChangeAmount = (e) => {
     this.props.onChange('priceChangeAmount', e);
   };
-  handleChangeMinListingPrice = e => {
+  handleChangeMinListingPrice = (e) => {
     this.props.onChange('minListingPrice', e);
     clearTimeout(this.minListingtimer);
     this.minListingtimer = setTimeout(() => {
@@ -133,13 +133,13 @@ export default class PriceCheckerView extends React.Component {
       );
     }, WAIT_INTERVAL);
   };
-  handleAdditionalCosts = e => {
+  handleAdditionalCosts = (e) => {
     this.props.onChange('additionalCosts', e);
   };
-  handleUpdateStockChange = e => {
+  handleUpdateStockChange = (e) => {
     this.props.onChange('stockUpdate', e);
   };
-  handleUpdatePriceChange = e => {
+  handleUpdatePriceChange = (e) => {
     this.props.onChange('priceUpdate', e);
     this.props.onChange('autoPriceChanger', false);
     clearTimeout(this.timer);
@@ -156,14 +156,19 @@ export default class PriceCheckerView extends React.Component {
     return (
       <>
         <Box>
-          <Button type="secondary" onClick={this.props.handleReloadOffers}>
+          <Button
+            type="secondary"
+            onClick={this.props.handleReloadOffers}
+            loading={this.props.loadingOffers}
+          >
             Reload your offers
           </Button>
         </Box>
         <Box>
           <Table dataSource={this.props.tableOffers} columns={this.columns} />
         </Box>
-        {this.state.selectedOffer && (
+
+        {/* {this.state.selectedOffer && (
           <Modal
             title="Offer configuration"
             visible={this.state.showModal}
@@ -324,7 +329,7 @@ export default class PriceCheckerView extends React.Component {
               </Text>
             </ModalSwitchItem>
           </Modal>
-        )}
+        )} */}
       </>
     );
   }

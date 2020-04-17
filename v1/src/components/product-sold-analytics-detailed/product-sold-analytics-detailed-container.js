@@ -3,7 +3,6 @@ import ProductSoldAnalyticsDetailedView from './product-sold-analytics-detailed-
 import {
   getOffersTrackInfoOfProduct,
   getTrackedProduct,
-  getCommission,
   deleteBolProduct,
 } from '../../utils/bol';
 export default class ProductSoldAnalyticsDetailedContainer extends React.Component {
@@ -18,16 +17,16 @@ export default class ProductSoldAnalyticsDetailedContainer extends React.Compone
     this.onChange = this.onChange.bind(this);
     this.handleCommission = this.handleCommission.bind(this);
   }
-  handleCommission = async (ean, price) => {
-    const commission = await getCommission(ean, price);
-    this.setState({
-      bolReceivePrice: commission.totalCost,
-      bolCommissionPercentage: commission.percentage,
-      commissionReduction: commission.hasOwnProperty('reductions')
-        ? commission.reductions[0]
-        : false,
-    });
-  };
+  // handleCommission = async (ean, price) => {
+  //   const commission = await getCommission(ean, price);
+  //   this.setState({
+  //     bolReceivePrice: commission.totalCost,
+  //     bolCommissionPercentage: commission.percentage,
+  //     commissionReduction: commission.hasOwnProperty('reductions')
+  //       ? commission.reductions[0]
+  //       : false,
+  //   });
+  // };
   async componentDidMount() {
     const id = this.props.match.params.id;
     const offers = await getOffersTrackInfoOfProduct(id);
@@ -48,7 +47,6 @@ export default class ProductSoldAnalyticsDetailedContainer extends React.Compone
           offers={this.state.offers}
           product={this.state.product}
           onChange={this.onChange}
-          handleCommission={this.handleCommission}
           deleteProduct={this.deleteProduct}
           {...this.state}
           {...this.props}

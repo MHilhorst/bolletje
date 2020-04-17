@@ -1,0 +1,36 @@
+.ant-table {
+  display: block;
+}
+@media screen and (max-width: 600px) {
+  .ant-table-thead {
+    display: none;
+  }
+  .ant-table-thead > tr th:first-of-type,
+  .ant-table-tbody > tr th:first-of-type,
+  .ant-table-thead > tr td:first-of-type,
+  .ant-table-tbody > tr td:first-of-type {
+    padding-top: 1rem;
+  }
+  .ant-table-thead > tr th:last-of-type,
+  .ant-table-tbody > tr th:last-of-type,
+  .ant-table-thead > tr td:last-of-type,
+  .ant-table-tbody > tr td:last-of-type {
+    padding-bottom: 1rem;
+  }
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > th,
+  .ant-table-thead > tr > td,
+  .ant-table-tbody > tr > td {
+    display: block;
+    width: auto !important;
+    border: none;
+    padding: 0 1rem;
+    font-size: 1.1rem;
+  }
+  .ant-table-thead > tr > th:last-child,
+  .ant-table-tbody > tr > th:last-child,
+  .ant-table-thead > tr > td:last-child,
+  .ant-table-tbody > tr > td:last-child {
+    border-bottom: 1px solid #eee;
+  }
+}

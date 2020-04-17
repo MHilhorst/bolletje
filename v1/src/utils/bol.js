@@ -1,25 +1,5 @@
 import { getSession } from './auth';
 
-export const reloadOffers = async () => {
-  const jwt = await getSession();
-  if (jwt) {
-    const response = await fetch(
-      `${process.env.REACT_APP_API_HOST}/api/bol/offers/update`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwt}`,
-        },
-      }
-    );
-    const data = await response.json();
-    return data;
-  } else {
-    return { error: true };
-  }
-};
-
 export const createOffer = async (
   ean,
   condition,
@@ -141,23 +121,6 @@ export const getOffersTrackInfoOfProduct = async (id) => {
   return data.offers;
 };
 
-export const updateAutoOffer = async (bodyData) => {
-  const jwt = await getSession();
-  const response = await fetch(
-    `${process.env.REACT_APP_API_HOST}/api/track/offer`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
-      },
-      body: JSON.stringify(bodyData),
-    }
-  );
-  const data = await response.json();
-  return data;
-};
-
 export const getAutoOfferInfo = async (autoOfferId) => {
   const jwt = await getSession();
   const response = await fetch(
@@ -183,39 +146,6 @@ export const getBolOfferInfo = async (bolOfferId) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwt}`,
       },
-    }
-  );
-  const data = await response.json();
-  return data;
-};
-
-export const getUserOwnOffers = async () => {
-  const jwt = await getSession();
-  const response = await fetch(
-    `${process.env.REACT_APP_API_HOST}/api/bol/offers`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
-  );
-  const data = await response.json();
-  return data;
-};
-
-export const getCommission = async (ean, price) => {
-  const jwt = await getSession();
-  const response = await fetch(
-    `${process.env.REACT_APP_API_HOST}/api/bol/commission`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
-      },
-      body: JSON.stringify({ ean, price }),
     }
   );
   const data = await response.json();
