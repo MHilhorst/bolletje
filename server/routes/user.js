@@ -48,6 +48,7 @@ router.delete('/timeline/:id', async (req, res) => {
 
 router.put('/', jwtAuth({ secret }), (req, res) => {
   const toUpdate = {};
+  console.log(req.body);
   if (req.body.firstName) toUpdate.first_name = req.body.firstName;
   if (req.body.lastName) toUpdate.last_name = req.body.lastName;
   if (req.body.address) toUpdate.address = req.body.address;
@@ -63,22 +64,21 @@ router.put('/', jwtAuth({ secret }), (req, res) => {
           { _id: req.user._id },
           { $set: toUpdate },
           { new: true },
-          (err, user) => {
-            console.log(user);
-          }
+          (err, user) => {}
         );
       });
     });
+  } else {
+    User.findOneAndUpdate(
+      { _id: req.user._id },
+      { $set: req.body },
+      { new: true, bol_client_secret: 0 },
+      (err, user) => {
+        console.log(user);
+        return res.json({ user });
+      }
+    );
   }
-  User.findOneAndUpdate(
-    { _id: req.user._id },
-    { $set: toUpdate },
-    { new: true },
-    (err, user) => {
-      console.log(user);
-      return res.json({ user });
-    }
-  );
 });
 
 router.get('/bol/auth', (req, res) => {

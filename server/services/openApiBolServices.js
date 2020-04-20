@@ -17,15 +17,19 @@ const showTotalCalls = () => {
 const resetTotalCalls = () => {
   totalRequests = 0;
 };
-const getOtherOffers = async (ean) => {
+const getOtherOffers = async (ean, sendProductID) => {
   const productId = await getProductIdWithEAN(ean);
   const response = await fetch(
     `${baseUrl}/catalog/v4/offers/${productId}${queryApi}&offers=all`,
     { method: 'GET' }
   );
-  const data = await response.json();
   countCalls(1);
-  return data;
+  if (sendProductID) {
+    const data = await response.json();
+    return { data, productId };
+  } else {
+    return await response.json();
+  }
 };
 
 const getProductIdWithEAN = async (ean) => {
@@ -160,6 +164,14 @@ const updateProductOffers = async (id, product) => {
   }
 };
 
+const getProductOffers = async (id, product) => {
+  const response = await fetch(
+    `${baseUrl}/catalog/v4/products/${id}${queryApi}&offers=all`
+  );
+  countCalls(1);
+  return await response.json();
+};
+
 // const updateProduct = async (id) => {
 //   const response = await fetch(
 //     `${baseUrl}/catalog/v4/products/${id}${queryApi}&offers=all`
@@ -267,3 +279,4 @@ module.exports.updateProductOffers = updateProductOffers;
 module.exports.showTotalCalls = showTotalCalls;
 module.exports.resetTotalCalls = resetTotalCalls;
 module.exports.totalRequests = totalRequests;
+module.exports.getProductOffers = getProductOffers;

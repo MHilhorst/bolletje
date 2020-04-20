@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
+const RepricerOffer = require('../models/RepricerOffer');
 const Message = require('../models/Message');
 const Offer = require('../models/Offer');
 const Product = require('../models/Product');
@@ -10,6 +11,11 @@ const {
   getCronJobStatus,
   priceMonitor,
 } = require('../services/productChecker');
+const {
+  startCronJobRepricer,
+  stopCronJobRepricer,
+  getCronJobStatusRepricer,
+} = require('../services/repricer_service');
 // const PriceMonitor = require('../services/productChecker');
 const router = express.Router();
 
@@ -50,6 +56,13 @@ router.get('/products/:id', async (req, res) => {
 
 router.get('/offers/:id', async (req, res) => {
   const offer = await Offer.findOne({ public_offer_id: req.params.id }).exec();
+  res.json({ offer });
+});
+
+router.get('/repricer-offers/:id', async (req, res) => {
+  const offer = await RepricerOffer.findOne({
+    offer_id: req.params.id,
+  }).exec();
   res.json({ offer });
 });
 
@@ -122,6 +135,24 @@ router.post('/monitor', async (req, res) => {
     if (stopCronJob()) res.status(201).json({ success: true });
   }
 });
+
+router.post('/monitor-repricer', async (req, res) => {
+  if (req.body.start) {
+    if (startCronJobRepricer()) res.status(201).json({ success: true });
+  }
+  if (req.body.stop) {
+    if (stopCronJobRepricer()) res.status(201).json({ success: true });
+  }
+});
+router.get('/monitor-status-repricer', async (req, res) => {
+  const data = getCronJobStatusRepricer();
+  res.json({
+    status: data.status,
+    next_run: data.nextRun,
+    start_tracking_time: data.startTrackingTime,
+  });
+});
+
 router.get('/monitor-status', async (req, res) => {
   const data = getCronJobStatus();
   res.json({

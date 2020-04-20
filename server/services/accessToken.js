@@ -1,8 +1,8 @@
 const User = require('../models/User');
 const fetch = require('node-fetch');
 
-const getUser = (id) => {
-  return User.findOne({ _id: id }).exec();
+const getUser = async (id) => {
+  return await User.findOne({ _id: id }).exec();
 };
 
 const updateUserAccessToken = (access_token, user) => {

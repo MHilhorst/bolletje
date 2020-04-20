@@ -57,6 +57,14 @@ const UserSchema = new Schema({
   own_offers: {
     type: Array,
   },
+  status: {
+    loading_export_file: { type: Boolean },
+    export_file: { type: Boolean },
+    export_file_time_created: { type: Date },
+    // updates: { type: Array  },
+    updates: { type: Array },
+    default: {},
+  },
   plugins: {
     type: Array,
     default: [],
@@ -75,6 +83,15 @@ const UserSchema = new Schema({
   },
   token: {
     type: String,
+  },
+  csv: {
+    url: {
+      type: String,
+    },
+    last_update: {
+      type: Date,
+      default: Date.now(),
+    },
   },
   admin_account: {
     type: Boolean,

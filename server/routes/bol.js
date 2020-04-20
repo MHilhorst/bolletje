@@ -7,8 +7,6 @@ const { getToken } = require('../services/accessToken');
 const {
   createOffer,
   getOffer,
-  getOffers,
-  requestOffersList,
   getOpenOrders,
   getCommission,
 } = require('../services/bolServices');
@@ -193,10 +191,10 @@ router.post('/commission', async (req, res) => {
   res.json({ ...commission });
 });
 
-router.get('/v2/offers', async (req, res) => {
-  const bolOffers = await BolOffer.find({ user_id: req.user._id }).exec();
-  return res.json({ bolOffers });
-});
+// router.get('/v2/offers', async (req, res) => {
+//   const bolOffers = await BolOffer.find({ user_id: req.user._id }).exec();
+//   return res.json({ bolOffers });
+// });
 
 // router.get('/offers/update', jwtAuth({ secret }), async (req, res) => {
 //   if (req.user) {
