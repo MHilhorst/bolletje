@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tag, Descriptions } from 'antd';
+import { Tag, Descriptions, Timeline } from 'antd';
 import { Box } from '../../styles/style';
 
 export default class AdminUsersDetailedView extends React.Component {
@@ -58,6 +58,36 @@ export default class AdminUsersDetailedView extends React.Component {
             </Descriptions.Item>
             <Descriptions.Item label="Max Track Items" span={3}>
               {this.props.childUser.max_track_items}
+            </Descriptions.Item>
+            <Descriptions.Item label="Repricer Offers" span={3}>
+              {this.props.childUser.own_offers.map((offer) => {
+                return <a href={`/admin/repricer-offers/${offer}`}>{offer}</a>;
+              })}
+            </Descriptions.Item>
+            <Descriptions.Item label="Repricer Updates" span={3}>
+              <Timeline>
+                {this.props.childUser.status.updates.map((update) => {
+                  return (
+                    <Timeline.Item>
+                      <span>{update.id}</span>
+                      <br />
+                      <span>
+                        {new Date(
+                          new Date(update.timestamp).getTime()
+                        ).toString()}
+                      </span>
+                      <br />
+                      <Tag
+                        color={update.status === 'SUCCESS' ? 'green' : 'red'}
+                      >
+                        {update.status}
+                      </Tag>
+                      <br />
+                      <span>{update.entity_id}</span>
+                    </Timeline.Item>
+                  );
+                })}
+              </Timeline>
             </Descriptions.Item>
           </Descriptions>
         </Box>

@@ -13,6 +13,7 @@ import AdminProducts from '../admin-products';
 import AdminDashboard from '../admin-dashboard';
 import AdminOffersDetailed from '../admin-offers-detailed';
 import AdminUsersDetailed from '../admin-users-detailed';
+import AdminRepricerOffer from '../admin-repriceroffers-detailed';
 import AdminProductsDetailed from '../admin-products-detailed';
 import Dashboard from '../dashboard';
 // import InventoryOverview from '../inventory-overview';
@@ -260,6 +261,15 @@ class App extends React.Component {
               exact
               path="/admin/dashboard"
               component={AdminDashboard}
+              layout={BaseLayout}
+              user={this.state.user}
+              session={this.state.session}
+              {...this.props}
+            />
+            <AdminWrapper
+              exact
+              path="/admin/repricer-offers/:id"
+              component={AdminRepricerOffer}
               layout={BaseLayout}
               user={this.state.user}
               session={this.state.session}

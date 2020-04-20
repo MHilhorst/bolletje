@@ -34,6 +34,16 @@ export default class ProfileContainer extends React.Component {
     const url = await upgradeAccount();
     window.location.href = url.url;
   };
+  handleBolUpdate = async () => {
+    const updateQuery = {};
+    if (this.state.bolClientSecret)
+      updateQuery.bol_client_secret = this.state.bolClientSecret;
+    if (this.state.bolClientId)
+      updateQuery.bol_client_id = this.state.bolClientId;
+    if (this.state.bolShopName)
+      updateQuery.bol_shop_name = this.state.bolShopName;
+    await updateUserInformation(updateQuery);
+  };
   render() {
     return (
       <ProfileView
@@ -41,6 +51,7 @@ export default class ProfileContainer extends React.Component {
         onChange={this.onChange}
         handleSubmitProfileEdit={this.handleSubmitProfileEdit}
         handleUpgrade={this.handleUpgrade}
+        handleBolUpdate={this.handleBolUpdate}
         {...this.state}
       />
     );

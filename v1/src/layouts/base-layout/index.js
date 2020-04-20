@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu, Icon } from 'antd';
+import { Layout, Menu, Icon, Tag } from 'antd';
 import { HeaderLogo } from '../../styles/style';
 import NavigationBar from '../../components/navigation-bar';
 import { UndoOutlined } from '@ant-design/icons';
@@ -15,6 +15,19 @@ class BaseLayout extends React.Component {
   onCollapse = () => {
     this.setState({ collapsed: !this.state.collapsed });
   };
+  componentDidMount() {
+    if (window.location.pathname === '/dashboard') {
+      this.setState({ current: 1 });
+    } else if (window.location.pathname === '/product-sold-analytics') {
+      this.setState({ current: 2 });
+    } else if (window.location.pathname.includes('/product-sold-analytics')) {
+      this.setState({ current: 2 });
+    } else if (window.location.pathname === '/track-product') {
+      this.setState({ current: 4 });
+    } else if (window.location.pathname === '/product-checker') {
+      this.setState({ current: 5 });
+    }
+  }
   render() {
     return (
       <Layout style={{ minHeight: '100vh' }}>
@@ -35,7 +48,12 @@ class BaseLayout extends React.Component {
               />
             )}
           </HeaderLogo>
-          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+          <Menu
+            theme="dark"
+            mode="inline"
+            defaultSelectedKeys={['1']}
+            selectedKeys={[this.state.current]}
+          >
             <Menu.Item
               key="1"
               onClick={() => this.props.history.push('/dashboard')}
@@ -75,7 +93,12 @@ class BaseLayout extends React.Component {
               onClick={() => this.props.history.push('/price-checker')}
             >
               <UndoOutlined />
-              <span>Price Checker</span>
+              <span>RePricer </span>
+              {!this.state.collapsed && (
+                <Tag color="green" style={{}}>
+                  BETA
+                </Tag>
+              )}
             </Menu.Item>
 
             {/* <Menu.Item

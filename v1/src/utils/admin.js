@@ -133,6 +133,21 @@ export const getUser = async (query) => {
   );
   return await response.json();
 };
+export const getRepricerOffer = async (query) => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/admin/repricer-offers/${query}`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
+  return await response.json();
+};
 
 export const getUserQuery = async (query) => {
   const jwt = await getSession();

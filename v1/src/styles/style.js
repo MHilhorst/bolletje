@@ -14,7 +14,7 @@ export const LoginContainerBox = Styled.div`
     align-items:center;
     justify-content:center;
     height:100vh;
-    background-color:#0069ff;
+    background-color:#142032;
     width:100%
 `;
 export const Box = Styled.div`
@@ -23,9 +23,17 @@ export const Box = Styled.div`
     border-radius:5px;
     margin-top:24px;
 `;
+export const LabelInput = Styled.label`
+    font-size:14px;
+    font-weight:500
+`;
+export const LabelDescription = Styled.label`
+    font-size:14px;
+    font-weight:400
+`;
 
 export const LoginBox = Styled(Box)`
-    width:450px;
+    width:400px;
 @media (max-width: 768px) {
     width: 100%;
   } 
@@ -43,7 +51,7 @@ export const LoginHeader = Styled.div`
 export const subText = Styled.text`
     color:#f2f4f5;
     font-size:1rem;
-    text-align: ${props => (props.center ? 'center' : 'none')}
+    text-align: ${(props) => (props.center ? 'center' : 'none')}
 `;
 
 export const ModalSwitchItem = Styled.div`

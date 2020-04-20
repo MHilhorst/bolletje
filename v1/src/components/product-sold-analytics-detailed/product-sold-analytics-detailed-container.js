@@ -15,7 +15,6 @@ export default class ProductSoldAnalyticsDetailedContainer extends React.Compone
       productCosts: 0,
     };
     this.onChange = this.onChange.bind(this);
-    this.handleCommission = this.handleCommission.bind(this);
   }
   // handleCommission = async (ean, price) => {
   //   const commission = await getCommission(ean, price);

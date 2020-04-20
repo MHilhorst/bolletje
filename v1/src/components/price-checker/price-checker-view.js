@@ -1,20 +1,44 @@
 import React from 'react';
-import { Box } from '../../styles/style';
+import { Box, LabelInput, LabelDescription } from '../../styles/style';
 import {
   Button,
   Table,
-  // Modal,
+  Modal,
   Tag,
+  Select,
   // Switch,
   // Typography,
   // Divider,
   // InputNumber,
+  Input,
+  Alert,
+  Badge,
 } from 'antd';
-import { getAutoOfferInfo } from '../../utils/bol';
+import { SwapOutlined } from '@ant-design/icons';
 // const { Text } = Typography;
 
-const WAIT_INTERVAL = 1000;
+const getFormattedDate = (date) => {
+  const dd = date.getDate();
+  const mm = date.getMonth() + 1;
+  const yyyy = date.getFullYear();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
 
+  return (
+    dd +
+    '-' +
+    mm +
+    '-' +
+    yyyy +
+    ' ' +
+    hours +
+    ':' +
+    (minutes < 10 ? '0' + minutes : minutes)
+  );
+};
+
+const WAIT_INTERVAL = 1000;
+const { Option, OptGroup } = Select;
 export default class PriceCheckerView extends React.Component {
   constructor(props) {
     super(props);
@@ -22,20 +46,72 @@ export default class PriceCheckerView extends React.Component {
       showModal: false,
       selectedOffer: null,
     };
+    this.selectOffersColumns = [
+      {
+        title: 'EAN',
+        dataIndex: 'ean',
+      },
+      {
+        title: 'Offer ID',
+        dataIndex: 'offerId',
+      },
+      {
+        title: 'Imported',
+        dataIndex: 'imported',
+        render: (value, record) => {
+          return this.props.tableOffers.findIndex((tableOffer) => {
+            return tableOffer.ean === record.ean;
+          }) !== -1 ? (
+            <Tag color="orange">Already Imported</Tag>
+          ) : (
+            false
+          );
+        },
+      },
+    ];
     this.columns = [
+      {
+        title: 'Synchronized',
+        dataIndex: 'sync',
+        key: 'sync',
+        render: (value) => {
+          return value ? <SwapOutlined /> : null;
+        },
+      },
       {
         title: 'Product Name',
         dataIndex: 'productName',
         key: 'productName',
+        render: (value, record) => {
+          return (
+            <a href={`https://www.bol.com/nl/s/?searchtext=${record.ean}`}>
+              {value}
+            </a>
+          );
+        },
       },
       {
         title: 'Live tracking',
         dataIndex: 'liveTracking',
         key: 'liveTracking',
-        render: (value) => {
+        render: (value, record) => {
           if (value) return <Tag color="blue">Tracking</Tag>;
+          else {
+            return (
+              <Tag color="orange">Not Tracking</Tag>
+              // <Button
+              //   onClick={() => {
+              //     console.log('clicked');
+              //     this.handleStartRepricer(record);
+              //   }}
+              // >
+              //   Activate
+              // </Button>
+            );
+          }
         },
       },
+      { title: 'ean', dataIndex: 'ean', key: 'ean' },
       {
         title: 'Current Price',
         dataIndex: 'currentPrice',
@@ -52,72 +128,58 @@ export default class PriceCheckerView extends React.Component {
         key: 'totalSellers',
       },
       {
-        title: 'Offer Rank',
-        dataIndex: 'offerRank',
-        key: 'offerRank',
+        title: 'Minimum Price',
+        dataIndex: 'minPrice',
+        key: 'minPrice',
       },
       {
         title: 'Best Offer',
         dataIndex: 'bestOffer',
         key: 'bestOffer',
         render: (value) => {
+          if (!value) return <Tag color="red">Not Top Offer</Tag>;
           return <Tag color="green">Currently top offer</Tag>;
         },
       },
       {
-        title: 'Configure',
-        key: 'configure',
-        render: (value) => (
-          <span>
-            <span onClick={() => this.handleModal(value)}>Configure</span>
-            <br />
-            <span
-              onClick={() =>
-                this.props.history.push(
-                  `/product-management/${value.offerInfo.autoOffer._id}`
-                )
-              }
-            >
-              View
-            </span>
-          </span>
-        ),
+        title: 'Bol Active',
+        dataIndex: 'bolActive',
+        key: 'bolActive',
+        render: (value) => {
+          if (value) return <Tag color="green">Active</Tag>;
+          return <Tag color="orange">On Hold</Tag>;
+        },
       },
     ];
     this.timer = null;
     this.minListingTimer = null;
 
-    this.handleModal = this.handleModal.bind(this);
     this.handleOk = this.handleOk.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
     this.handleChangeAutoPrice = this.handleChangeAutoPrice.bind(this);
   }
-  handleModal = async (e) => {
-    const autoOfferInfo = await getAutoOfferInfo(e.offerInfo.autoOffer._id);
-    this.props.onChange('currentOfferId', autoOfferInfo.offer_id);
-    this.props.onChange('minProfit', autoOfferInfo.min_profit);
-    this.props.onChange('minListingPrice', autoOfferInfo.min_listing_price);
-    this.props.onChange('additionalCosts', autoOfferInfo.additional_costs);
-    this.props.onChange('priceChangeAmount', autoOfferInfo.price_change_amount);
-    this.props.onChange('priceUpdate', e.currentPrice);
-    this.props.onChange('autoPriceChanger', autoOfferInfo.auto_track);
-    this.props.onChange('stockUpdate', e.currentStock);
-    this.props.handleCommission(e.ean, e.currentPrice, false);
-    this.props.handleCommission(e.ean, this.props.minListingPrice, true);
-    this.setState({ showModal: true, selectedOffer: e, autoOfferInfo });
+
+  handleStartRepricer = async (e) => {
+    this.props.onChange('repricerActive', 2);
+    this.props.onChange('activeRepricerOffer');
+    this.props.handleUpdateRepricerOffer(e.id);
   };
+
   handleOk = () => {
-    this.setState({ showModal: false });
-    this.props.handleSubmit(this.state.selectedOffer.offerInfo.autoOffer._id);
+    this.props.handleUploadUrl();
   };
   handleCancel = () => {
-    this.setState({ showModal: false });
+    this.setState({ showCsvModal: false });
+    this.props.onChange('selectOffersModal', false);
   };
   handleChangeAutoPrice = (checked) => {
     this.props.onChange('autoPriceChanger', checked);
   };
   handleChangeMinProfit = (e) => {
     this.props.onChange('minProfit', e);
+  };
+  handleCsvUrlChange = (e) => {
+    this.props.onChange('url', e.target.value);
   };
   handleChangePriceChangeAmount = (e) => {
     this.props.onChange('priceChangeAmount', e);
@@ -133,6 +195,14 @@ export default class PriceCheckerView extends React.Component {
       );
     }, WAIT_INTERVAL);
   };
+  getDefaultExportId = (updates) => {
+    const pendingOffer = updates.reverse().findIndex((update) => {
+      return update.status === 'PENDING';
+    });
+    if (pendingOffer !== -1) return updates[pendingOffer].id;
+    return 'NEW';
+  };
+
   handleAdditionalCosts = (e) => {
     this.props.onChange('additionalCosts', e);
   };
@@ -152,184 +222,238 @@ export default class PriceCheckerView extends React.Component {
     }, WAIT_INTERVAL);
   };
 
+  handleSelectedReloadOfferId = (e) => {
+    this.props.onChange('requestId', e);
+  };
   render() {
     return (
       <>
         <Box>
+          <Select
+            defaultValue={this.getDefaultExportId(
+              this.props.user.status.updates
+            )}
+            style={{ width: 360 }}
+            onChange={this.handleSelectedReloadOfferId}
+          >
+            <OptGroup label={'NEW'}>
+              <Option
+                value={'NEW'}
+                style={{ backgroundColor: '#fafafa', fontWeight: '500' }}
+                disabled={
+                  this.props.user.status.updates
+                    .reverse()
+                    .findIndex((update) => {
+                      return update.status === 'PENDING';
+                    }) === -1
+                    ? false
+                    : true
+                }
+              >
+                Create new Export File
+              </Option>
+            </OptGroup>
+            <OptGroup label={'PENDING'}>
+              {this.props.user.status.updates
+                .map((update) => {
+                  if (update.status === 'PENDING')
+                    return (
+                      <Option value={update.id}>
+                        Offer Export File{' '}
+                        {getFormattedDate(new Date(update.timestamp))}{' '}
+                        <Tag color="orange">PENDING</Tag>
+                      </Option>
+                    );
+                  else return false;
+                })
+                .sort((a, b) => {
+                  return b.timestamp - a.timestamp;
+                })}
+            </OptGroup>
+            <OptGroup label={'SUCCESS'}>
+              {this.props.user.status.updates
+                .map((update) => {
+                  if (update.status === 'SUCCESS')
+                    return (
+                      <Option
+                        value={update.id}
+                        style={{ paddingBottom: 7 }}
+                        disabled={
+                          this.props.user.status.updates
+                            .reverse()
+                            .findIndex((update) => {
+                              return update.status === 'PENDING';
+                            }) === -1
+                            ? false
+                            : true
+                        }
+                      >
+                        Offer Export File{' '}
+                        {getFormattedDate(new Date(update.timestamp))}{' '}
+                        <Tag color="green">SUCCESS</Tag>
+                        <Badge
+                          count={update.total_items}
+                          className="site-badge-count-4"
+                        />
+                      </Option>
+                    );
+                  else {
+                    return false;
+                  }
+                })
+                .sort((a, b) => {
+                  return b.timestamp - a.timestamp;
+                })}
+            </OptGroup>
+            <OptGroup label={'FAILED'}>
+              {this.props.user.status.updates
+                .map((update) => {
+                  if (update.status === 'FAILURE') {
+                    return (
+                      <Option
+                        value={update.id}
+                        disabled={
+                          this.props.user.status.updates
+                            .reverse()
+                            .findIndex((update) => {
+                              return update.status === 'PENDING';
+                            }) === -1
+                            ? false
+                            : true
+                        }
+                      >
+                        Offer Export File{' '}
+                        {getFormattedDate(new Date(update.timestamp))}{' '}
+                        <Tag color="red">FAILURE</Tag>
+                      </Option>
+                    );
+                  } else {
+                    return false;
+                  }
+                })
+                .sort((a, b) => {
+                  return b.timestamp - a.timestamp;
+                })}
+            </OptGroup>
+          </Select>
           <Button
             type="secondary"
             onClick={this.props.handleReloadOffers}
             loading={this.props.loadingOffers}
           >
             Reload your offers
+          </Button>{' '}
+          {this.props.user.hasOwnProperty('status') &&
+            this.props.user.status.export_file && (
+              <Tag color="green">
+                Last Load Succes at{' '}
+                {this.props.user.status.export_file_time_created}
+              </Tag>
+            )}
+          {this.props.user.hasOwnProperty('status') &&
+            !this.props.user.status.export_file && (
+              <Tag color="red" style={{ marginLeft: 12 }}>
+                Previous Load failed at{' '}
+                {this.props.user.status.export_file_time_created}
+              </Tag>
+            )}
+        </Box>
+        <Box>
+          <Button
+            type="secondary"
+            // onClick={this.props.handleUploadUrl}
+            onClick={() => this.setState({ showCsvModal: true })}
+            loading={this.props.loadingCSVImport}
+          >
+            Upload CSV URL
           </Button>
         </Box>
         <Box>
           <Table dataSource={this.props.tableOffers} columns={this.columns} />
+          <span>Producten zijn gelinkt aan de volgende url: </span>
+          <a href={this.props.user.csv.url}>{'  '} link</a>
         </Box>
 
-        {/* {this.state.selectedOffer && (
-          <Modal
-            title="Offer configuration"
-            visible={this.state.showModal}
-            onOk={this.handleOk}
-            onCancel={this.handleCancel}
-          >
-            <ModalSwitchItem>
-              <Text>Auto Price updater</Text>
-              <Switch
-                defaultChecked={this.state.autoOfferInfo.auto_track}
-                onChange={this.handleChangeAutoPrice}
-                checked={this.props.autoPriceChanger}
-              />
-            </ModalSwitchItem>
-            {this.props.autoPriceChanger && (
-              <ModalSwitchItem style={{ marginTop: 15 }}>
-                <Text>Minimum Price boundary</Text>
-                <InputNumber
-                  defaultValue={this.props.minListingPrice}
-                  formatter={value =>
-                    `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  onChange={this.handleChangeMinListingPrice}
-                />
-              </ModalSwitchItem>
-            )}
-            {this.props.autoPriceChanger && (
-              <>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    marginTop: 5
-                  }}
-                >
-                  <Text strong style={{ fontSize: '0.7rem' }}>
-                    Your minimum profit €{' '}
-                    {this.props.minListingCommission &&
-                      Math.round(
-                        ((this.props.minListingPrice -
-                          this.props.minListingCommission -
-                          this.props.additionalCosts) *
-                          100) /
-                          100
-                      ).toFixed(2)}
-                  </Text>
-                </div>
-              </>
-            )}
-            {this.props.autoPriceChanger && (
-              <ModalSwitchItem style={{ marginTop: 15 }}>
-                <Text>Auto price change amount</Text>
-                <InputNumber
-                  defaultValue={
-                    this.state.autoOfferInfo.price_change_amount || 0.01
-                  }
-                  formatter={value =>
-                    `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  onChange={this.handleChangePriceChangeAmount}
-                />
-              </ModalSwitchItem>
-            )}
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Update stock</Text>
-              <InputNumber
-                defaultValue={this.props.stockUpdate}
-                onChange={this.handleUpdateStockChange}
-              />
-            </ModalSwitchItem>
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Update Price</Text>
-              <InputNumber
-                defaultValue={this.props.priceUpdate}
-                formatter={value =>
-                  `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                onChange={this.handleUpdatePriceChange}
-              />
-            </ModalSwitchItem>
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Additional costs (Shipping / Packaging / Product)</Text>
-              <InputNumber
-                defaultValue={this.props.additionalCosts}
-                formatter={value =>
-                  `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                onChange={this.handleAdditionalCosts}
-              />
-            </ModalSwitchItem>
-            <Divider />
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              {this.props.commissionReduction && (
-                <Tag color="green">
-                  Reduction available until{' '}
-                  {this.props.commissionReduction.endDate}
-                </Tag>
-              )}
-              {this.props.commissionReduction && (
-                <div style={{ textAlign: 'right' }}>
-                  <Text>
-                    Lower price to €{' '}
-                    {this.props.commissionReduction.maximumPrice}
-                  </Text>
-                  <br />
-                  <Text strong style={{ fontSize: '0.7rem' }}>
-                    Bol.com commission: €{' '}
-                    {this.props.commissionReduction.costReduction}
-                  </Text>
-                </div>
-              )}
-            </ModalSwitchItem>
-
-            <Divider />
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Bol.com Price</Text>
-              <Text>
-                {this.props.autoPriceChanger
-                  ? `€ ${this.props.minListingPrice} -`
-                  : null}{' '}
-                € {this.props.priceUpdate}
-              </Text>
-            </ModalSwitchItem>
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Bol.com commission</Text>
-              <Text>
-                {this.props.autoPriceChanger
-                  ? `€ ${this.props.minListingCommission} -`
-                  : null}{' '}
-                € {this.props.bolReceivePrice}
-              </Text>
-            </ModalSwitchItem>
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text>Additional costs</Text>
-              <Text>€ {this.props.additionalCosts}</Text>
-            </ModalSwitchItem>
-            <ModalSwitchItem style={{ marginTop: 15 }}>
-              <Text strong>Total profit</Text>
-              <Text strong>
-                {this.props.autoPriceChanger
-                  ? `€ ${this.props.minListingCommission &&
-                      Math.round(
-                        ((this.props.minListingPrice -
-                          this.props.minListingCommission -
-                          this.props.additionalCosts) *
-                          100) /
-                          100
-                      ).toFixed(2)} - `
-                  : null}
-                €{' '}
-                {Math.round(
-                  ((this.props.priceUpdate -
-                    this.props.bolReceivePrice -
-                    this.props.additionalCosts) *
-                    100) /
-                    100
-                ).toFixed(2)}
-              </Text>
-            </ModalSwitchItem>
-          </Modal>
-        )} */}
+        <Modal
+          title="CSV Upload URL"
+          visible={this.state.showCsvModal}
+          onOk={this.handleOk}
+          onCancel={this.handleCancel}
+          okText={'Import'}
+          confirmLoading={this.props.loadingCSVImport}
+        >
+          <LabelInput>CSV URL</LabelInput>
+          <br />
+          <LabelDescription>
+            Make sure the URL is public available. Paste the whole URL
+          </LabelDescription>
+          <Input
+            style={{ marginTop: 4 }}
+            addonBefore="https://"
+            placeholder="https://docs.google.com/spreadsheets/d/"
+            onChange={this.handleCsvUrlChange}
+            defaultValue={this.props.user.csv.url}
+          />
+          {this.props.noUrlError && (
+            <Alert
+              message="No URL"
+              type="error"
+              style={{ marginTop: 12, marginBottom: 12 }}
+              showIcon
+            />
+          )}
+          {this.props.outputCsvError && (
+            <Alert
+              message="Make sure you are publishing a CSV file from Google Spreadsheet and not a Webpage."
+              type="error"
+              style={{ marginTop: 12, marginBottom: 12 }}
+              showIcon
+            />
+          )}
+        </Modal>
+        <Modal
+          title={`Select Offers ${this.props.selectedOffers.length}/30`}
+          visible={this.props.selectOffersModal}
+          onOk={this.props.handleSetSelectedOffers}
+          onCancel={this.handleCancel}
+          okText={'Import'}
+          confirmLoading={this.props.loadingCSVImport}
+          width={714}
+        >
+          {/* <Input
+            placeholder="Search Name"
+            value={this.props.eanSearch}
+            onChange={(e) => {
+              this.props.onChange('eanSearch', e.target.value);
+              const filteredData = this.props.selectOffersData.filter((entry) =>
+                entry.ean.includes(e.target.value)
+              );
+              this.props.onChange('selectOffersData', filteredData);
+            }}
+          /> */}
+          <Table
+            columns={this.selectOffersColumns}
+            dataSource={this.props.selectOffersData}
+            rowSelection={{
+              type: 'checkbox',
+              onChange: (selectedRowKeys, selectedRows) => {
+                const selectedOffers = selectedRows.map((row) => {
+                  return row.offerId;
+                });
+                this.props.onChange('selectedOffers', selectedOffers);
+              },
+              getCheckboxProps: (record) => ({
+                disabled:
+                  this.props.tableOffers.findIndex((tableOffer) => {
+                    return tableOffer.ean === record.ean;
+                  }) !== -1
+                    ? true
+                    : false,
+                ean: record.ean,
+              }),
+            }}
+          />
+        </Modal>
       </>
     );
   }

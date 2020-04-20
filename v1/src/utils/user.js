@@ -16,10 +16,11 @@ export const getUserInformation = async () => {
 };
 
 export const updateUserInformation = async (data) => {
+  const jwt = await getSession();
   return fetch(`${process.env.REACT_APP_API_HOST}/api/user`, {
     method: 'PUT',
     headers: {
-      Authorization: jwt,
+      Authorization: `Bearer ${jwt}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data),

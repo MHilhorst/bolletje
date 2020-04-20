@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '../../styles/style';
+import { Box, LabelInput } from '../../styles/style';
 import {
   Layout,
   Col,
@@ -60,6 +60,15 @@ export default class ProfileView extends React.Component {
   handleUpgrade = (e) => {
     this.props.handleUpgrade();
   };
+  handleIdChange = (e) => {
+    this.props.onChange('bolClientId', e.target.value);
+  };
+  handleSecretChange = (e) => {
+    this.props.onChange('bolClientSecret', e.target.value);
+  };
+  handleBolShopName = (e) => {
+    this.props.onChange('bolShopName', e.target.value);
+  };
   render() {
     return (
       <Layout>
@@ -73,30 +82,62 @@ export default class ProfileView extends React.Component {
           <Box>
             <Tabs defaultActiveKey="1">
               <TabPane key="1" tab="Profile">
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: 10,
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar size={64} icon="user" />
-                    <div style={{ marginLeft: 10 }}>
-                      <Text strong>
-                        {this.props.user.first_name} {this.props.user.last_name}
-                      </Text>
-                      <br />
-                      <Text>Premium user</Text>
-                      <br />
-                      <Text>
-                        {this.props.user.address} {this.props.user.zip}
-                      </Text>
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginTop: 10,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar size={64} icon="user" />
+                      <div style={{ marginLeft: 10 }}>
+                        <Text strong>
+                          {this.props.user.first_name}{' '}
+                          {this.props.user.last_name}
+                        </Text>
+                        <br />
+                        <Text>Premium user</Text>
+                        <br />
+                        <Text>
+                          {this.props.user.address} {this.props.user.zip}
+                        </Text>
+                      </div>
+                    </div>
+                    <div>
+                      <Button onClick={this.showProfileEdit}>
+                        Edit Profile
+                      </Button>
                     </div>
                   </div>
-                  <div>
-                    <Button onClick={this.showProfileEdit}>Edit Profile</Button>
-                  </div>
+                  <Divider />
+                  <Title level={4}>Bol.com Credentials</Title> <br />
+                  <LabelInput>Bol.com Shop Name</LabelInput>
+                  <Input
+                    style={{ marginTop: 12, marginBottom: 12 }}
+                    onChange={this.handleBolShopName}
+                    value={
+                      this.props.bolShopName || this.props.user.bol_shop_name
+                    }
+                  />
+                  <LabelInput>Bol.com Client ID</LabelInput>
+                  <Input
+                    style={{ marginTop: 12, marginBottom: 12 }}
+                    onChange={this.handleIdChange}
+                    value={
+                      this.props.bolClientId || this.props.user.bol_client_id
+                    }
+                  />
+                  <LabelInput>Bol.com Client Secret</LabelInput>
+                  <br />
+                  <Input
+                    style={{ marginTop: 12, marginBottom: 12 }}
+                    onChange={this.handleSecretChange}
+                    value={this.props.bolClientSecret}
+                    disabled={this.props.user.bol_client_id ? true : false}
+                  />
+                  <Button onClick={this.props.handleBolUpdate}>Save</Button>
                 </div>
               </TabPane>
               <TabPane key="2" tab="Billing" disabled>

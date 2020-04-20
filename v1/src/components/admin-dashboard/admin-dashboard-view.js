@@ -12,7 +12,17 @@ const getFormattedDate = (date) => {
   const hours = date.getHours();
   const minutes = date.getMinutes();
 
-  return dd + '-' + mm + '-' + yyyy + ' ' + hours + ':' + minutes;
+  return (
+    dd +
+    '-' +
+    mm +
+    '-' +
+    yyyy +
+    ' ' +
+    hours +
+    ':' +
+    (minutes < 10 ? '0' + minutes : minutes)
+  );
 };
 
 export default class AdminDashboardView extends React.Component {
