@@ -33,17 +33,22 @@ const columns = [
     title: 'Account Type',
     dataIndex: 'accountType',
     key: 'accountType',
-    render: (value) => {
-      if (value === 1) {
-        return <Tag color="gold">Premium</Tag>;
-      } else if (value === 2) {
+    render: (value, record) => {
+      if (value === 'MEDIUM' && record.adminAccount) {
         return (
           <span>
-            <Tag color="gold">Premium</Tag>
-            <Tag color="red">Admin</Tag>
+            <Tag color="blue">MEDIUM</Tag>
+            <Tag color="red">ADMIN</Tag>
           </span>
         );
-      } else if (value === 0) {
+      }
+      if (value === 'MEDIUM') {
+        return <Tag color="blue">MEDIUM</Tag>;
+      }
+      if (value === 'SMALL') {
+        return <Tag color="orange">SMALL</Tag>;
+      }
+      if (value === 'TRIAL') {
         return <Tag color="green">Trial</Tag>;
       }
     },

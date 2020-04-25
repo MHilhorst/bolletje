@@ -9,6 +9,7 @@ const {
   updatePrice,
   requestProcessStatus,
 } = require('../services/bolServices');
+const { syncOfferWithDataFeed } = require('../services/datafeed');
 const request = require('request');
 const { setRepricerOffer } = require('../services/repricer_service.js');
 const { getOtherOffers } = require('../services/openApiBolServices');
@@ -23,63 +24,29 @@ router.post('/commission', async (req, res) => {
   res.json({ ...commission });
 });
 
-// router.get('/offers/update', async (req, res) => {
-//   const token = await getToken(req.user._id);
-//   const user = await User.findOne({ _id: req.user._id }).exec();
-//   if (user.status.loading_export_file === false) {
-//     user.status.export_file_time_created = Date.now();
-//     user.status.loading_export_file = true;
-//     await user.save();
-//     const entityId = await requestOffersList(token, user);
-//     if (!entityId) {
-//       user.status.export_file = false;
-//       user.status.loading_export_file = false;
-//       await user.save();
-//       return res.status(401).json({ success: false });
-//     }
-//     const ownOffers = await getOffers(entityId, token);
-//     for (let i = 0; i < ownOffers.length; i++) {
-//       const repricerOffer = await setRepricerOffer(ownOffers[i], user);
-//       const otherOffers = await getOtherOffers(repricerOffer.ean, true);
-
-//       otherOffers.data.offerData.offers.sort((a, b) => {
-//         return a.price - b.price;
-//       });
-//       repricerOffer.offers_visible = otherOffers.data.offerData.offers;
-//       repricerOffer.total_sellers =
-//         otherOffers.data.offerData.offers.length || 0;
-//       repricerOffer.product_id = otherOffers.productId;
-//       await repricerOffer.save();
-//     }
-//     if (entityId) {
-//       user.status.export_file = true;
-//     }
-//     user.status.loading_export_file = false;
-//     await user.save();
-//     res.status(200).json({ success: true });
-//   } else {
-//     res.status(401).json({ success: false });
-//   }
-// });
-
 router.post('/offers/activate', async (req, res) => {
   const user = await User.findOne({ _id: req.user._id }).exec();
-  if (req.body.offers.length < 30 && user.own_offers.length < 30) {
+  if (30 - user.own_offers.length >= req.body.offers.length) {
     const { offers } = req.body;
     for (let i = 0; i < offers.length; i++) {
       const existingOwnOffer = user.own_offers.findIndex((value) => {
         return value === offers[i];
       });
-      if (existingOwnOffer) {
+      if (existingOwnOffer === -1) {
+        // Remove offer_Ids from own_offer field of the User Object
         const repricerOffer = await setRepricerOffer(
           { offerId: offers[i] },
           user
         );
-        console.log(repricerOffer);
         const otherOffers = await getOtherOffers(repricerOffer.ean, true);
         otherOffers.data.offerData.offers.sort((a, b) => {
           return a.price - b.price;
         });
+        repricerOffer.selected_competitors = otherOffers.data.offerData.offers.map(
+          (offer) => {
+            return offer.id;
+          }
+        );
         repricerOffer.offers_visible = otherOffers.data.offerData.offers;
         repricerOffer.total_sellers =
           otherOffers.data.offerData.offers.length || 0;
@@ -102,7 +69,7 @@ router.get('/offers/update', async (req, res) => {
     user.status.export_file_time_created = Date.now();
     user.status.loading_export_file = true;
     await user.save();
-    if (req.query.requestId) {
+    if (req.query.requestId && req.query.requestId !== 'undefined') {
       data = await requestProcessStatus(req.query.requestId, token, user, true);
     } else {
       data = await requestOffersList(token, user, true);
@@ -145,13 +112,51 @@ router.get('/offers/update', async (req, res) => {
   }
 });
 
+router.get('/offers/:id', async (req, res) => {
+  const repricerOffer = await RepricerOffer.findOne(
+    {
+      user_id: req.user._id,
+      _id: req.params.id,
+    },
+    {
+      'updates.buy_box.id': 0,
+      'updates.buy_box.availabilityDescription': 0,
+      'updates.buy_box.sellerId': 0,
+      'updates.buy_box.sellerType': 0,
+      'updates.buy_box.sellerReviews': 0,
+      'updates.buy_box.sellerRating': 0,
+      'updates.buy_box.sellerApprovalPercentage': 0,
+      'updates.buy_box.sellerRegistrationDate': 0,
+      'updates.own_offer.id': 0,
+      'updates.own_offer.availabilityDescription': 0,
+      'updates.own_offer.sellerId': 0,
+      'updates.own_offer.sellerType': 0,
+      'updates.own_offer.sellerReviews': 0,
+      'updates.own_offer.sellerRating': 0,
+      'updates.own_offer.sellerApprovalPercentage': 0,
+      'updates.own_offer.sellerRegistrationDate': 0,
+    }
+  ).exec();
+  if (repricerOffer) {
+    res.json({ repricerOffer });
+  } else {
+    res.status(401).json({ success: false });
+  }
+});
+
 router.put('/offers/:id', async (req, res) => {
+  console.log(req.body.customSelectionCompetitors);
   const repriceOffer = await RepricerOffer.findOne({
     user_id: req.user._id,
     _id: req.params.id,
   }).exec();
   if (req.body.repricerActive)
     repriceOffer.repricer_active = req.body.repricerActive;
+  if (req.body.selectedCompetitors)
+    repriceOffer.selected_competitors = req.body.selectedCompetitors;
+  if (req.body.hasOwnProperty('customSelectionCompetitors'))
+    repriceOffer.custom_selection_competitors =
+      req.body.customSelectionCompetitors;
   await repriceOffer.save();
   res.json({ success: true });
 });
@@ -167,6 +172,7 @@ router.get('/offers', async (req, res) => {
 router.post('/upload/csv', async (req, res) => {
   let file = fs.createWriteStream(`uploads/csv/${req.user._id}.csv`);
   const user = await User.findById(req.user._id).exec();
+  // let offersInDataFeed = [];
   try {
     const data = new Promise((resolve, reject) => {
       let stream = request({
@@ -183,7 +189,6 @@ router.post('/upload/csv', async (req, res) => {
           'User-Agent':
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
         },
-        /* GZIP true for most of the websites now, disable it if you don't need it */
         gzip: true,
       })
         .pipe(file)
@@ -197,55 +202,14 @@ router.post('/upload/csv', async (req, res) => {
     });
     data
       .then(() => {
-        fs.createReadStream(`uploads/csv/${req.user._id}.csv`)
-          .pipe(csv())
-          .on('data', async (row) => {
-            const repricerOffer = await RepricerOffer.findOne(
-              {
-                ean: row.ean,
-                user_id: user._id,
-              },
-              { updates: 0, offers_visible: 0 }
-            ).exec();
-            console.log(row);
-            if (repricerOffer && row.active == 'true') {
-              repricerOffer.repricer_active = true;
-              repricerOffer.min_price = row.min_price;
-            }
-            if (repricerOffer.repricer_active && row.active == 'false') {
-              repricerOffer.repricer_active = false;
-              const token = await getToken(user._id);
-              const data = await updatePrice(
-                repricerOffer.offer_id,
-                Number(row.original_price),
-                token
-              );
-              if (data) {
-                repricerOffer.price = Number(row.original_price);
-              }
-            }
-            if (
-              repricerOffer.price !== Number(row.original_price) &&
-              row.active == 'false'
-            ) {
-              repricerOffer.repricer_active = false;
-              const token = await getToken(user._id);
-              const data = await updatePrice(
-                repricerOffer.offer_id,
-                Number(row.original_price),
-                token
-              );
-              if (data) {
-                repricerOffer.price = Number(row.original_price);
-              }
-            }
-            await repricerOffer.save();
-          });
+        const promise = syncOfferWithDataFeed(user);
+        return promise;
       })
-      .then(async () => {
+      .then((offersInDataFeed) => {
+        user.csv.ean = offersInDataFeed;
         user.csv.url = req.body.url;
         user.csv.last_update = Date.now();
-        await user.save();
+        user.save();
         res.json({ success: true });
       });
   } catch (error) {

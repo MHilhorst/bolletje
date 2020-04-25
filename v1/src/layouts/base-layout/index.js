@@ -31,7 +31,17 @@ class BaseLayout extends React.Component {
   render() {
     return (
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider trigger={null} collapsible collapsed={this.state.collapsed}>
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={this.state.collapsed}
+          // style={{
+          //   overflow: 'auto',
+          //   height: '100vh',
+          //   position: 'fixed',
+          //   left: 0,
+          // }}
+        >
           <HeaderLogo>
             {!this.state.collapsed && (
               <img
@@ -43,7 +53,7 @@ class BaseLayout extends React.Component {
             {this.state.collapsed && (
               <img
                 src={require('../../assets/images/smalLogo.png')}
-                style={{ maxHeight: '100%', maxWidth: '50%' }}
+                style={{ maxHeight: '100%', maxWidth: '100%' }}
                 alt={'mock'}
               />
             )}

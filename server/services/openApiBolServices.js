@@ -114,7 +114,7 @@ const filterOffers = async (offerData, product, max) => {
   const condition = ['Als nieuw', 'Nieuw', 'Goed'];
   const preSortOffers = [];
   const bolOffer = [];
-  const bannedSellers = ['916223'];
+  const bannedSellers = ['916223', '1270331'];
   offerData.offers.forEach((offer) => {
     if (offer.seller.id === '0') {
       bolOffer.push(offer);

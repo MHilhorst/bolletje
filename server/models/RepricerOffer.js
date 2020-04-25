@@ -35,6 +35,9 @@ const RepriceOffer = new Schema({
     type: Number,
   },
   best_offer: {
+    type: Object,
+  },
+  best_offer_is_own_offer: {
     type: Boolean,
   },
   offers_visible: {
@@ -68,6 +71,17 @@ const RepriceOffer = new Schema({
   updates: {
     type: Array,
     default: [],
+  },
+  selected_competitors: {
+    type: Array,
+    default: [],
+  },
+  repricer_increment: {
+    type: Number,
+  },
+  custom_selection_competitors: {
+    type: Boolean,
+    default: false,
   },
 });
 

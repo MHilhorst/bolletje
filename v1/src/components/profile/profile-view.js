@@ -11,9 +11,24 @@ import {
   Modal,
   Input,
   Row,
+  Select,
+  List,
+  Tag,
+  Card,
+  Badge,
 } from 'antd';
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
+const { Option } = Select;
+
+const getFormattedDate = (date) => {
+  const dd = date.getDate();
+  const mm = date.getMonth() + 1;
+  const yyyy = date.getFullYear();
+
+  return dd + '-' + mm + '-' + yyyy;
+};
+
 export default class ProfileView extends React.Component {
   constructor(props) {
     super(props);
@@ -69,6 +84,9 @@ export default class ProfileView extends React.Component {
   handleBolShopName = (e) => {
     this.props.onChange('bolShopName', e.target.value);
   };
+  selectedSubscription = (e) => {
+    this.props.onChange('selectedAccountType', e);
+  };
   render() {
     return (
       <Layout>
@@ -95,10 +113,23 @@ export default class ProfileView extends React.Component {
                       <div style={{ marginLeft: 10 }}>
                         <Text strong>
                           {this.props.user.first_name}{' '}
-                          {this.props.user.last_name}
+                          {this.props.user.last_name}{' '}
+                          <Tag
+                            color={
+                              this.props.user.subscription.account_type ===
+                              'MEDIUM'
+                                ? 'blue'
+                                : this.props.user.subscription.account_type ===
+                                  'SMALL'
+                                ? 'orange'
+                                : 'green'
+                            }
+                          >
+                            {this.props.user.subscription.account_type}
+                          </Tag>
                         </Text>
                         <br />
-                        <Text>Premium user</Text>
+                        <Text>{this.props.user.email}</Text>
                         <br />
                         <Text>
                           {this.props.user.address} {this.props.user.zip}
@@ -140,19 +171,105 @@ export default class ProfileView extends React.Component {
                   <Button onClick={this.props.handleBolUpdate}>Save</Button>
                 </div>
               </TabPane>
-              <TabPane key="2" tab="Billing" disabled>
-                <div>
-                  <Text strong style={{ fontSize: 16, color: '#999' }}>
-                    Current Package{' '}
-                  </Text>
-                  <br />
-                  <Text strong style={{ fontSize: 20 }}>
-                    Free
-                  </Text>
-                </div>
-                <Divider />
-                <Button onClick={() => this.handleUpgrade()}>Upgrade</Button>
-              </TabPane>
+              {this.props.user.subscription.account_type === 'TRIAL' && (
+                <TabPane key="2" tab="Billing">
+                  <div>
+                    <Text strong style={{ fontSize: 16, color: '#999' }}>
+                      Current Package
+                    </Text>
+                    <br />
+                    <Text style={{ fontSize: 20, fontWeight: 500 }}>
+                      {this.props.user.subscription.account_type}
+                    </Text>
+                    <br />
+                  </div>
+
+                  <Divider />
+
+                  <Select
+                    style={{ width: 360 }}
+                    onChange={this.selectedSubscription}
+                    defaultValue={this.props.user.subscription.account_type}
+                  >
+                    <Option value={'SMALL'}>SMALL</Option>
+                    <Option value={'MEDIUM'}>MEDIUM</Option>
+                  </Select>
+
+                  <Button onClick={() => this.handleUpgrade()}>Upgrade</Button>
+                </TabPane>
+              )}
+              {this.props.user.subscription.account_type !== 'TRIAL' && (
+                <TabPane key="3" tab="Payment Method">
+                  <Card
+                    size="small"
+                    title={
+                      this.props.user.subscription.mollie_mandate.method ===
+                      'directdebit'
+                        ? 'Automatische Incasso'
+                        : this.props.user.subscription.mollie_mandate.method
+                    }
+                    extra={
+                      this.props.user.subscription.mollie_mandate.status ? (
+                        <Badge status="success" />
+                      ) : (
+                        <Badge status="error" />
+                      )
+                    }
+                    style={{ width: 300 }}
+                  >
+                    {
+                      this.props.user.subscription.mollie_mandate.details
+                        .consumerName
+                    }
+                    <br />
+                    {
+                      this.props.user.subscription.mollie_mandate.details
+                        .consumerAccount
+                    }
+                  </Card>
+                </TabPane>
+              )}
+              {this.props.user.subscription.account_type !== 'TRIAL' && (
+                <TabPane key="4" tab="Payment History">
+                  <div>
+                    <List
+                      width={'50%'}
+                      bordered
+                      dataSource={this.props.user.subscription.payment_history}
+                      renderItem={(item) => (
+                        <List.Item>
+                          <Text>{getFormattedDate(new Date(item.paidAt))}</Text>
+                          <Text>{item.description}</Text>
+                          <Text>
+                            {item.details ? item.details.consumerAccount : null}
+                          </Text>
+                          <>
+                            <Text>€{item.amount.value}</Text>
+                            <Tag
+                              color={
+                                item.status === 'paid' ? 'green' : 'orange'
+                              }
+                            >
+                              {item.status}
+                            </Tag>
+                          </>
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                </TabPane>
+              )}
+              {this.props.user.subscription.account_type !== 'TRIAL' && (
+                <TabPane key="5" tab="Subscription Change">
+                  <div>
+                    <Text>
+                      If you want to change your subscription to another
+                      subscription please send an e-mail to
+                      subscription@snapse.nl
+                    </Text>
+                  </div>
+                </TabPane>
+              )}
             </Tabs>
           </Box>
         </Col>

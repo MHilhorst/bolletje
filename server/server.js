@@ -69,4 +69,5 @@ app.use('/api/admin', adminAuth, require('./routes/admin'));
 app.use('/api/repricer', auth, require('./routes/repricer'));
 app.use('/api/order', require('./routes/order'));
 app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/payment/', require('./routes/payment'));
 server.listen(8000, () => {});

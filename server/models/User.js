@@ -23,6 +23,15 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  subscription: {
+    account_type: { type: String, default: 'TRIAL' },
+    max_track_items: { type: Number },
+    repricer_enabled: { type: Boolean },
+    repricer_max_track_items: { type: Number },
+    mollie_customer: { type: Object },
+    payment_history: { type: Array },
+    mollie_mandate: { type: Object },
+  },
   registration_timestamp: {
     type: Date,
     default: Date.now(),
@@ -61,7 +70,6 @@ const UserSchema = new Schema({
     loading_export_file: { type: Boolean },
     export_file: { type: Boolean },
     export_file_time_created: { type: Date },
-    // updates: { type: Array  },
     updates: { type: Array },
     default: {},
   },
@@ -77,6 +85,9 @@ const UserSchema = new Schema({
     type: Number,
     default: 2,
   },
+  repricer_active: {
+    type: Boolean,
+  },
   tokens: {
     type: Array,
     default: [],
@@ -87,6 +98,9 @@ const UserSchema = new Schema({
   csv: {
     url: {
       type: String,
+    },
+    ean: {
+      type: Array,
     },
     last_update: {
       type: Date,

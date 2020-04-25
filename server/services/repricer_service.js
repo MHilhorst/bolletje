@@ -4,7 +4,7 @@ const { getToken } = require('./accessToken');
 const { getOffer, updatePrice } = require('./bolServices');
 const request = require('request');
 const fs = require('fs');
-const csv = require('csv-parser');
+const { syncOfferWithDataFeed } = require('./datafeed');
 const { getProductOffers } = require('./openApiBolServices');
 const CronJob = require('cron').CronJob;
 
@@ -48,81 +48,188 @@ const getAllOffers = async (productId) => {
   }
 };
 
+const getTypesOfOffers = async (repriceOffer, user) => {
+  let allOffers = await getAllOffers(repriceOffer.product_id);
+  allOffers = allOffers.offers.filter((offer) => {
+    return offer.condition === 'Nieuw';
+  });
+  let allOffersWithoutOwnOffer = allOffers.filter((offer) => {
+    return (
+      offer.seller.displayName !== user.bol_shop_name &&
+      offer.condition === 'Nieuw'
+    );
+  });
+  const ownOfferFromBolStoreView = allOffers
+    .filter((offer) => {
+      return (
+        offer.seller.displayName === user.bol_shop_name &&
+        offer.condition === 'Nieuw'
+      );
+    })
+    .map((offer) => {
+      return {
+        id: offer.id,
+        price: offer.price,
+        bestOffer: offer.bestOffer,
+        availabilityCode: offer.availabilityCode,
+        availabilityDescription: offer.availabilityDescription,
+        sellerId: offer.seller.id,
+        sellerType: offer.seller.sellerType,
+        sellerDisplayName: offer.seller.displayName,
+        sellerTopSeller: offer.seller.topSeller,
+        sellerRating: offer.seller.sellerRating,
+        sellerReviews: offer.seller.allReviewsCounts,
+        sellerApprovalPercentage: offer.seller.approvalPercentage,
+        sellerRegistrationDate: offer.seller.registrationDate,
+      };
+    })[0];
+  const lowestPriceOffer = allOffersWithoutOwnOffer.sort((a, b) => {
+    return a.price - b.price;
+  })[0];
+  const bestOffer = allOffersWithoutOwnOffer
+    .filter((offer) => {
+      return offer.bestOffer === true;
+    })
+    .map((offer) => {
+      return {
+        id: offer.id,
+        price: offer.price,
+        bestOffer: offer.bestOffer,
+        availabilityCode: offer.availabilityCode,
+        availabilityDescription: offer.availabilityDescription,
+        sellerId: offer.seller.id,
+        sellerType: offer.seller.sellerType,
+        sellerDisplayName: offer.seller.displayName,
+        sellerTopSeller: offer.seller.topSeller,
+        sellerRating: offer.seller.sellerRating,
+        sellerReviews: offer.seller.allReviewsCounts,
+        sellerApprovalPercentage: offer.seller.approvalPercentage,
+        sellerRegistrationDate: offer.seller.registrationDate,
+      };
+    })[0];
+
+  const customSelectedOffers = allOffersWithoutOwnOffer.filter((offer) => {
+    return repriceOffer.selected_competitors.find((id) => {
+      return offer.id === id;
+    });
+  });
+
+  allOffersWithoutOwnOffer = allOffersWithoutOwnOffer.map((offer) => {
+    return {
+      id: offer.id,
+      price: offer.price,
+      bestOffer: offer.bestOffer,
+      availabilityCode: offer.availabilityCode,
+      availabilityDescription: offer.availabilityDescription,
+      sellerId: offer.seller.id,
+      sellerType: offer.seller.sellerType,
+      sellerDisplayName: offer.seller.displayName,
+      sellerTopSeller: offer.seller.topSeller,
+      sellerRating: offer.seller.sellerRating,
+      sellerReviews: offer.seller.allReviewsCounts,
+      sellerApprovalPercentage: offer.seller.approvalPercentage,
+      sellerRegistrationDate: offer.seller.registrationDate,
+    };
+  });
+  return {
+    allOffers,
+    allOffersWithoutOwnOffer,
+    ownOfferFromBolStoreView,
+    lowestPriceOffer,
+    bestOffer,
+    customSelectedOffers,
+  };
+};
+
+const autoUpdatePrice = async (
+  repriceOffer,
+  userId,
+  newPrice,
+  objectOffers
+) => {
+  const token = await getToken(userId);
+  const data = await updatePrice(repriceOffer.offer_id, newPrice, token);
+  if (data) {
+    const updateInfo = {
+      time_checked: Date.now(),
+      lower_price: true,
+      buy_box: objectOffers.bestOffer,
+      new_price: newPrice,
+      own_offer: objectOffers.ownOfferFromBolStoreView,
+    };
+    repriceOffer.price = newPrice;
+    repriceOffer.updates.push(updateInfo);
+    return true;
+  }
+};
+
+// Volgens Bol.com hoe het koopblok wordt bepaald:
+// Prijs: Klanten zijn op zoek naar de beste deal > Minimale prijsverschillen van 0,01 hebben geen impact.
+// Leverbelofte : Hoe sneller je kunt leveren, hoe meer kans je maakt op het koopblok. Je maximale aantal lever dagen is bepalend.
+// Prestatiescore : Hoger score op servicenormen = Grotere kans op een positie in het koopblok. Wordt 1x per week geupdate
+// Koopblok bekend making = 20 minuten
+// Don't target Bol.com
+// Select your own Competitors.
+
+const getNewPrice = async (repriceOffer, objectOffers) => {
+  let selectedOffers = objectOffers.customSelectedOffers
+    ? objectOffers.customSelectedOffers
+    : objectOffers.allOffersWithoutOwnOffer;
+  const lowestPriceOffer = objectOffers.lowestPriceOffer;
+  const buyBoxOffer = objectOffers.bestOffer;
+  const ownOffer = objectOffers.ownOfferFromBolStoreView;
+};
+
 const monitorRepricerOffer = async (repriceOffer, userId) => {
   const token = await getToken(userId);
+  const user = await User.findOne(
+    { _id: userId },
+    { bol_track_items: 0, own_offers: 0, password: 0 }
+  ).exec();
+  let updatedRepriceOffer;
   const ownOffer = await getOffer(repriceOffer.offer_id, token);
-
+  const ownPrice = ownOffer.pricing.bundlePrices[0].price;
   if (ownOffer.onHoldByRetailer) {
-    console.log('product not activated');
     repriceOffer.bol_active = false;
     repriceOffer.repricer_active = false;
   } else {
+    const objectOffers = await getTypesOfOffers(repriceOffer, user);
     repriceOffer.bol_active = true;
-    const allOffers = await getAllOffers(repriceOffer.product_id);
-    repriceOffer.total_sellers = allOffers.offers.length;
-    const allOffersWithoutOwnOffer = allOffers.offers.filter((offer) => {
-      return offer.seller.displayName !== 'cryptostarterkit.nl';
-    });
-    const ownOfferFromBolStoreView = allOffers.offers.filter((offer) => {
-      return offer.seller.displayName === 'cryptostarterkit.nl';
-    });
-    allOffersWithoutOwnOffer.sort((a, b) => {
-      return a.price - b.price;
-    });
-    const lowestPriceOffer = allOffersWithoutOwnOffer[0];
-    if (ownOfferFromBolStoreView.best_offer) {
-      repricerOffer.best_offer = true;
-      return await repriceOffer.save();
-    }
+    repriceOffer.total_sellers = objectOffers.allOffers.length;
+    repriceOffer.best_offer = objectOffers.bestOffer;
+    repriceOffer.best_offer_is_own_offer =
+      objectOffers.bestOffer.id === objectOffers.ownOfferFromBolStoreView.id
+        ? true
+        : false;
+
+    // const newPrice = await getNewPrice(repriceOffer, objectOffers);
     if (
-      lowestPriceOffer.price < ownOffer.pricing.bundlePrices[0].price &&
-      lowestPriceOffer.price - 0.01 > repriceOffer.min_price
+      objectOffers.lowestPriceOffer.price < ownPrice &&
+      objectOffers.lowestPriceOffer.price - 0.01 > repriceOffer.min_price
     ) {
-      const newPrice = lowestPriceOffer.price - 0.05;
-      const token = await getToken(userId);
-      const data = await updatePrice(repriceOffer.offer_id, newPrice, token);
-      if (data) {
-        const updateInfo = {
-          time_checked: Date.now(),
-          lower_price: true,
-          competitor_price: lowestPriceOffer.price,
-          new_price: newPrice,
-          competitor_name: lowestPriceOffer.seller.displayName,
-          competitor_id: lowestPriceOffer.seller.id,
-          best_offer: ownOfferFromBolStoreView.best_offer ? true : false,
-        };
-        repriceOffer.price = newPrice;
-        repriceOffer.best_offer = ownOfferFromBolStoreView.best_offer
-          ? true
-          : false;
-        repriceOffer.updates.push(updateInfo);
-        return await repriceOffer.save();
-      }
+      let minusPrice = repriceOffer.repricer_increment
+        ? repriceOffer.repricer_increment
+        : (objectOffers.ownOfferFromBolStoreView.price / 100) * 5;
+      const newPrice = objectOffers.lowestPriceOffer.price - minusPrice;
+      updatedRepriceOffer = await autoUpdatePrice(
+        repriceOffer,
+        userId,
+        newPrice,
+        objectOffers
+      );
     }
-    if (ownOffer.pricing.bundlePrices[0].price < lowestPriceOffer.price) {
-      const newPrice = lowestPriceOffer.price - 0.01;
-      const token = await getToken(userId);
-      const data = await updatePrice(repriceOffer.offer_id, newPrice, token);
-      if (data) {
-        const updateInfo = {
-          time_checked: Date.now(),
-          lower_price: false,
-          competitor_price: lowestPriceOffer.price,
-          new_price: newPrice,
-          competitor_name: lowestPriceOffer.seller.displayName,
-          competitor_id: lowestPriceOffer.seller.id,
-          best_offer: ownOfferFromBolStoreView.best_offer ? true : false,
-        };
-        repriceOffer.price = newPrice;
-        repriceOffer.stock = ownOffer.stock.amount;
-        repriceOffer.best_offer = ownOfferFromBolStoreView.best_offer
-          ? true
-          : false;
-        repriceOffer.updates.push(updateInfo);
-        return await repriceOffer.save();
-      }
-    } else {
-      return await repriceOffer.save();
+    if (ownPrice < objectOffers.lowestPriceOffer.price) {
+      const newPrice = objectOffers.lowestPriceOffer.price - 0.01;
+      updatedRepriceOffer = await autoUpdatePrice(
+        repriceOffer,
+        userId,
+        newPrice,
+        objectOffers
+      );
+    }
+    if (updatedRepriceOffer) {
+      console.log('updating product');
+      await repriceOffer.save();
     }
   }
 };
@@ -142,7 +249,8 @@ const stopCronJobRepricer = () => {
   return true;
 };
 
-const cronMonitor = new CronJob('0 */03 * * * *', () => {
+// const cronMonitor = new CronJob('0 */03 * * * *', () => {
+const cronMonitor = new CronJob('*/20 * * * * *', () => {
   getRepricerOffers(1);
   console.log('updated');
 });
@@ -213,61 +321,12 @@ const importCSV = async () => {
     });
     data
       .then(() => {
-        fs.createReadStream(`uploads/csv/${user._id}.csv`)
-          .pipe(csv())
-          .on('data', async (row) => {
-            const repricerOffer = await RepricerOffer.findOne(
-              {
-                ean: row.ean,
-                user_id: user._id,
-              },
-              { updates: 0, offers_visible: 0 }
-            )
-              .limit(1)
-              .exec();
-            if (repricerOffer) {
-              if (row.active == 'true' && row.min_price) {
-                repricerOffer.repricer_active = true;
-                repricerOffer.min_price = row.min_price;
-              }
-              if (
-                repricerOffer.repricer_active &&
-                row.active == 'false' &&
-                row.original_price
-              ) {
-                repricerOffer.repricer_active = false;
-                const token = await getToken(user._id);
-                const data = await updatePrice(
-                  repricerOffer.offer_id,
-                  Number(row.original_price),
-                  token
-                );
-                if (data) {
-                  repricerOffer.price = Number(row.original_price);
-                }
-              }
-              if (
-                repricerOffer.price !== Number(row.original_price) &&
-                row.active == 'false' &&
-                row.original_price
-              ) {
-                repricerOffer.repricer_active = false;
-                const token = await getToken(user._id);
-                const data = await updatePrice(
-                  repricerOffer.offer_id,
-                  Number(row.original_price),
-                  token
-                );
-                if (data) {
-                  repricerOffer.price = Number(row.original_price);
-                }
-              }
-              repricerOffer.linked_to_spreadsheet = true;
-              repricerOffer.save();
-            }
-          });
+        const promise = syncOfferWithDataFeed(user);
+        return promise;
       })
-      .then(() => {
+      .then((offersInDataFeed) => {
+        user.csv.ean = offersInDataFeed;
+        user.csv.last_update = Date.now();
         user.save();
       });
   });

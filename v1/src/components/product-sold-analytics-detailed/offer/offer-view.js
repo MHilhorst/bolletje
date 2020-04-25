@@ -115,7 +115,6 @@ export default class OfferView extends React.Component {
   }
   async componentDidMount() {
     const data = await this.getGraphDatav2(this.props.offer.updates);
-    console.log(data);
     this.setState({
       series: [{ data, name: 'Inventory' }],
     });

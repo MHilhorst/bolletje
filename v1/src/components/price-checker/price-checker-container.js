@@ -9,7 +9,7 @@ import {
   setSelectedOffers,
   setSpreadSheetImportUrl,
 } from '../../utils/repricer';
-import { notification, Statistic, Divider } from 'antd';
+import { notification, Statistic, Divider, Result, Button } from 'antd';
 
 const { Countdown } = Statistic;
 const openNotificationWithIcon = (type, success) => {
@@ -72,13 +72,16 @@ export default class PriceCheckerContainer extends React.Component {
         productName: offer.product_title,
         totalSellers: offer.total_sellers,
         currentPrice: offer.price,
-        bestOffer: offer.best_offer,
+        bestOffer: offer.best_offer_is_own_offer,
+        incrementAmount: offer.repricer_increment,
         currentStock: offer.stock,
         minPrice: offer.min_price,
         liveTracking: offer.repricer_active,
         bolActive: offer.bol_active,
         id: offer._id,
-        sync: offer.linked_to_spreadsheet,
+        sync: this.props.user.csv.ean.find((a) => offer.ean === a)
+          ? true
+          : false,
       };
     });
     if (this.props.user.status.updates.length > 0) {
@@ -214,19 +217,41 @@ export default class PriceCheckerContainer extends React.Component {
 
   render() {
     if (this.state.offers && this.state.tableOffers && !this.state.loading) {
-      return (
-        <PriceCheckerView
-          handleReloadOffers={this.handleReloadOffers}
-          onChange={this.onChange}
-          handleSubmit={this.handleSubmit}
-          handleUpdateRepricerOffer={this.handleUpdateRepricerOffer}
-          handleCommission={this.handleCommission}
-          handleSetSelectedOffers={this.handleSetSelectedOffers}
-          handleUploadUrl={this.handleUploadUrl}
-          {...this.state}
-          {...this.props}
-        />
-      );
+      if (
+        this.props.user.bol_client_id &&
+        this.props.user.bol_client_secret &&
+        this.props.user.bol_shop_name
+      ) {
+        return (
+          <PriceCheckerView
+            handleReloadOffers={this.handleReloadOffers}
+            onChange={this.onChange}
+            handleSubmit={this.handleSubmit}
+            handleUpdateRepricerOffer={this.handleUpdateRepricerOffer}
+            handleCommission={this.handleCommission}
+            handleSetSelectedOffers={this.handleSetSelectedOffers}
+            handleUploadUrl={this.handleUploadUrl}
+            {...this.state}
+            {...this.props}
+          />
+        );
+      } else {
+        return (
+          <Result
+            status="500"
+            title="Missing Bol.com API credentials"
+            subTitle="You need to fill in your Bol.com client ID and Bol.com client secret before you can use the Repricer tool."
+            extra={
+              <Button
+                type="primary"
+                onClick={() => this.props.history.push('/profile')}
+              >
+                Fill in Bol.com API credentials
+              </Button>
+            }
+          />
+        );
+      }
     } else return null;
   }
 }

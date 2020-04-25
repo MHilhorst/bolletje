@@ -14,6 +14,7 @@ export const LoginContainerBox = Styled.div`
     align-items:center;
     justify-content:center;
     height:100vh;
+    flex-direction:column;
     background-color:#142032;
     width:100%
 `;
@@ -33,7 +34,8 @@ export const LabelDescription = Styled.label`
 `;
 
 export const LoginBox = Styled(Box)`
-    width:400px;
+    width:350px;
+    border-radius:15px;
 @media (max-width: 768px) {
     width: 100%;
   } 

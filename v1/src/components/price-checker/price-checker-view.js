@@ -13,8 +13,8 @@ import {
   Input,
   Alert,
   Badge,
+  Tooltip,
 } from 'antd';
-import { SwapOutlined } from '@ant-design/icons';
 // const { Text } = Typography;
 
 const getFormattedDate = (date) => {
@@ -71,11 +71,16 @@ export default class PriceCheckerView extends React.Component {
     ];
     this.columns = [
       {
-        title: 'Synchronized',
+        title: 'Datafeed Sync',
         dataIndex: 'sync',
+        align: 'center',
         key: 'sync',
         render: (value) => {
-          return value ? <SwapOutlined /> : null;
+          return value ? (
+            <>
+              <Badge status="success" style={{ width: 5, height: 5 }} />
+            </>
+          ) : null;
         },
       },
       {
@@ -83,11 +88,7 @@ export default class PriceCheckerView extends React.Component {
         dataIndex: 'productName',
         key: 'productName',
         render: (value, record) => {
-          return (
-            <a href={`https://www.bol.com/nl/s/?searchtext=${record.ean}`}>
-              {value}
-            </a>
-          );
+          return <a href={`/price-checker/${record.id}`}>{value}</a>;
         },
       },
       {
@@ -116,6 +117,9 @@ export default class PriceCheckerView extends React.Component {
         title: 'Current Price',
         dataIndex: 'currentPrice',
         key: 'currentPrice',
+        render: (value) => {
+          return '€ ' + value;
+        },
       },
       {
         title: 'Current Stock',
@@ -131,6 +135,9 @@ export default class PriceCheckerView extends React.Component {
         title: 'Minimum Price',
         dataIndex: 'minPrice',
         key: 'minPrice',
+        render: (value) => {
+          return value ? '€ ' + value : null;
+        },
       },
       {
         title: 'Best Offer',
@@ -139,6 +146,14 @@ export default class PriceCheckerView extends React.Component {
         render: (value) => {
           if (!value) return <Tag color="red">Not Top Offer</Tag>;
           return <Tag color="green">Currently top offer</Tag>;
+        },
+      },
+      {
+        title: 'Increment Amount',
+        dataIndex: 'incrementAmount',
+        key: 'incrementAmount',
+        render: (value) => {
+          return '€ ' + value;
         },
       },
       {
@@ -261,7 +276,9 @@ export default class PriceCheckerView extends React.Component {
                       <Option value={update.id}>
                         Offer Export File{' '}
                         {getFormattedDate(new Date(update.timestamp))}{' '}
-                        <Tag color="orange">PENDING</Tag>
+                        <Tooltip title={update.id}>
+                          <Tag color="orange">PENDING</Tag>
+                        </Tooltip>
                       </Option>
                     );
                   else return false;
@@ -290,7 +307,9 @@ export default class PriceCheckerView extends React.Component {
                       >
                         Offer Export File{' '}
                         {getFormattedDate(new Date(update.timestamp))}{' '}
-                        <Tag color="green">SUCCESS</Tag>
+                        <Tooltip title={update.id}>
+                          <Tag color="green">SUCCESS</Tag>
+                        </Tooltip>
                         <Badge
                           count={update.total_items}
                           className="site-badge-count-4"
@@ -298,7 +317,7 @@ export default class PriceCheckerView extends React.Component {
                       </Option>
                     );
                   else {
-                    return false;
+                    return null;
                   }
                 })
                 .sort((a, b) => {
@@ -324,7 +343,9 @@ export default class PriceCheckerView extends React.Component {
                       >
                         Offer Export File{' '}
                         {getFormattedDate(new Date(update.timestamp))}{' '}
-                        <Tag color="red">FAILURE</Tag>
+                        <Tooltip title={update.id}>
+                          <Tag color="red">FAILURE</Tag>
+                        </Tooltip>
                       </Option>
                     );
                   } else {
@@ -412,7 +433,9 @@ export default class PriceCheckerView extends React.Component {
           )}
         </Modal>
         <Modal
-          title={`Select Offers ${this.props.selectedOffers.length}/30`}
+          title={`Select Offers ${
+            this.props.selectedOffers.length + this.props.tableOffers.length
+          }/${this.props.user.subscription.repricer_max_track_items}`}
           visible={this.props.selectOffersModal}
           onOk={this.props.handleSetSelectedOffers}
           onCancel={this.handleCancel}

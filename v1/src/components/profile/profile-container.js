@@ -5,7 +5,9 @@ import { upgradeAccount } from '../../utils/auth';
 export default class ProfileContainer extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      errorSubscriptionSelection: false,
+    };
     this.onChange = this.onChange.bind(this);
     this.handleSubmitProfileEdit = this.handleSubmitProfileEdit.bind(this);
     this.handleUpgrade = this.handleUpgrade.bind(this);
@@ -31,8 +33,15 @@ export default class ProfileContainer extends React.Component {
     await updateUserInformation(toUpdate);
   };
   handleUpgrade = async () => {
-    const url = await upgradeAccount();
-    window.location.href = url.url;
+    const data = await upgradeAccount({
+      accountType: this.state.selectedAccountType,
+    });
+    if (data.error) {
+      this.setState({ errorSubscriptionSelection: true });
+    }
+    if (data.url) {
+      window.location.href = data.url;
+    }
   };
   handleBolUpdate = async () => {
     const updateQuery = {};

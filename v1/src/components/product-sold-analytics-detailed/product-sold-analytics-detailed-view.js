@@ -143,7 +143,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
   render() {
     return (
       <>
-        {this.props.user.premium_account && (
+        {this.props.user.admin_account && (
           <Box>
             <Button onClick={this.handleDeleteProduct}>Delete product</Button>
           </Box>
@@ -204,7 +204,7 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             </Descriptions.Item>
           </Descriptions>
         </Box>
-        {this.props.user.premium_account && (
+        {this.props.user.admin_account && (
           <Box>
             <Descriptions title="Developer Information" bordered>
               <Descriptions.Item label="Internal ID">

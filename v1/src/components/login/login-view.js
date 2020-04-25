@@ -8,6 +8,7 @@ import {
   LoginInput,
 } from '../../styles/style';
 import { setToken, userLogin } from '../../utils/auth';
+import { MailOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 class LoginView extends React.Component {
@@ -56,11 +57,18 @@ class LoginView extends React.Component {
     if (!this.state.redirect) {
       return (
         <LoginContainerBox>
+          <img
+            src={require('../../assets/images/logo.png')}
+            width={150}
+            alt={'Logo'}
+          />
           <LoginBox>
             <LoginHeader>
               <div style={{ textAlign: 'center' }}>
                 <Title level={4}>Login to Account</Title>
-                <Text>Please enter your email and password to continue</Text>
+                <Text style={{ fontSize: 16 }}>
+                  Please enter your email and password to continue
+                </Text>
               </div>
             </LoginHeader>
             <div
@@ -70,13 +78,13 @@ class LoginView extends React.Component {
                 marginTop: 20,
               }}
             >
-              <div style={{ width: '80%  ' }}>
+              <div style={{ width: '90%  ' }}>
                 <LoginInput>
                   <Input
                     prefix={
-                      <Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />
+                      <MailOutlined style={{ color: 'rgba(0,0,0,.25)' }} />
                     }
-                    placeholder="Username"
+                    placeholder="E-mail"
                     onChange={this.handleEmailChange}
                   />
                 </LoginInput>
@@ -88,10 +96,10 @@ class LoginView extends React.Component {
                     type="password"
                     placeholder="Password"
                     onChange={this.handlePasswordChange}
-                    style={{ marginBottom: 5 }}
+                    style={{ marginBottom: 6 }}
                     onKeyDown={this.handleEnterSubmit}
                   />
-                  <Text>
+                  <Text style={{ fontSize: 13 }}>
                     {this.state.errorLogin && (
                       <Alert
                         message="Credentials are wrong"
@@ -100,13 +108,13 @@ class LoginView extends React.Component {
                         showIcon
                       />
                     )}
-                    Forgot your password? Click{' '}
-                    <a href="/docs/spec/proximity">here.</a>
+                    {/* Forgot your password? Click{' '} */}
+                    {/* <a href="/docs/spec/proximity">here.</a> */}
                   </Text>
                 </LoginInput>
                 <div
                   style={{
-                    marginTop: 20,
+                    marginTop: 25,
                     marginBottom: 40,
                     textAlign: 'center',
                   }}
@@ -128,7 +136,7 @@ class LoginView extends React.Component {
                       marginTop: 10,
                     }}
                   >
-                    <Text>
+                    <Text style={{ fontSize: 16 }}>
                       Or <a href="/register">create</a> an account
                     </Text>
                   </div>
@@ -136,6 +144,9 @@ class LoginView extends React.Component {
               </div>
             </div>
           </LoginBox>
+          <Text style={{ color: '#c2c2c2', fontSize: 13, marginTop: 64 }}>
+            Snapse © 2020. Version 1.0.1
+          </Text>
         </LoginContainerBox>
       );
     } else {

@@ -33,7 +33,8 @@ export default class AdminContainer extends React.Component {
         userId: user._id,
         email: user.email,
         registrationDate: user.registration_timestamp,
-        accountType: !user.premium_account ? 0 : user.admin_account ? 2 : 1,
+        accountType: user.subscription.account_type,
+        adminAccount: user.admin_account,
         itemTracked: `${user.bol_track_items.length}/${user.max_track_items}`,
       };
     });

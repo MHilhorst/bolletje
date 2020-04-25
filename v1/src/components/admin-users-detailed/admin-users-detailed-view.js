@@ -25,10 +25,12 @@ export default class AdminUsersDetailedView extends React.Component {
               {this.props.childUser.zip}
             </Descriptions.Item>
             <Descriptions.Item label="Account Type" span={3}>
-              {this.props.childUser.premium_account ? (
-                <Tag color="orange">Premium</Tag>
+              {this.props.childUser.subscription.account_type === 'MEDIUM' ? (
+                <Tag color="blue">MEDIUM</Tag>
+              ) : this.props.childUser.subscription.account_type === 'SMALL' ? (
+                <Tag color="orange">SMALL</Tag>
               ) : (
-                <Tag color="green">Trial</Tag>
+                <Tag color="green">TRIAL</Tag>
               )}
             </Descriptions.Item>
             <Descriptions.Item label="E-mail" span={3}>

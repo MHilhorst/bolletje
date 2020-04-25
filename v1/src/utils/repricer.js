@@ -20,6 +20,21 @@ export const reloadOffers = async (query) => {
   }
 };
 
+export const getRepricerOffer = async (id) => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/repricer/offers/${id}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
+  return await response.json();
+};
+
 export const updateRepricerOffer = async (query, id) => {
   const jwt = await getSession();
   const response = await fetch(

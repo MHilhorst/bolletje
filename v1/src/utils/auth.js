@@ -84,18 +84,34 @@ export const checkInventoryItem = async (id) => {
   return { ...data };
 };
 
-export const upgradeAccount = async () => {
+export const upgradeAccount = async (query) => {
   const jwt = Cookies.get('token');
   const response = await fetch(
-    `${process.env.REACT_APP_API_HOST}/api/auth/upgrade`,
+    `${process.env.REACT_APP_API_HOST}/api/payment/upgrade`,
     {
-      method: 'GET',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify(query),
+    }
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const resendEmailVerification = async () => {
+  const jwt = Cookies.get('token');
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/auth/email/resend`,
+    {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwt}`,
       },
     }
   );
-  const data = await response.json();
-  return data;
+  return await response.json();
 };

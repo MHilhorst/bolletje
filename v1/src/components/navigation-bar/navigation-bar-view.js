@@ -22,20 +22,25 @@ class NavigationBarView extends React.Component {
     <Menu>
       <Menu.Item key="0">
         <a href="/profile">
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', width: 180 }}>
             <Avatar size={32} icon="user" />
             <div style={{ marginLeft: 10, marginTop: 4, marginBottom: 4 }}>
               <Text strong style={{ marginBottom: 0, paddingBottom: 0 }}>
-                {this.props.user.first_name} {this.props.user.last_name}{' '}
-                {this.props.user.premium_account && (
-                  <Tag color="orange">Premium</Tag>
-                )}
-                {!this.props.user.premium_account && (
-                  <Tag color="green">Trial</Tag>
+                {this.props.user.first_name.length < 14
+                  ? this.props.user.first_name
+                  : this.props.user.first_name.substr(0, 14) + '...'}{' '}
+                {this.props.user.subscription.account_type === 'MEDIUM' ? (
+                  <Tag color="blue">MEDIUM</Tag>
+                ) : this.props.user.subscription.account_type === 'SMALL' ? (
+                  <Tag color="orange">SMALL</Tag>
+                ) : (
+                  <Tag color="green">TRIAL</Tag>
                 )}
               </Text>
               <span style={{ display: 'block', marginTop: 0, paddingTop: 0 }}>
-                {this.props.user.email}
+                {this.props.user.email.length < 18
+                  ? this.props.user.email
+                  : this.props.user.email.substr(0, 18) + '...'}
               </span>
             </div>
           </div>

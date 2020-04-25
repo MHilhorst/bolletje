@@ -54,7 +54,7 @@ const getOffers = async (id, token) => {
 };
 
 const getOffersV2 = async (id, userId) => {
-  const token = await getToken('5e024682eb7f3d01a4f1dd58');
+  const token = await getToken(userId);
   const response = await fetch(
     `https://api.bol.com/retailer/offers/export/${id}`,
     {
@@ -107,6 +107,35 @@ const getOffersV2 = async (id, userId) => {
 
 let sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const updateUser = async (user, dataEntityId, id) => {
+  const updateExist = user.status.updates.findIndex((update) => {
+    return update.id.toString() === id.toString();
+  });
+  if (updateExist !== -1) {
+    User.findOneAndUpdate(
+      { _id: user._id, 'status.updates.id': id.toString() },
+      {
+        $set: {
+          'status.updates.$.status': dataEntityId.status,
+          'status.updates.$.timestamp': Date.now(),
+        },
+      },
+      { new: true },
+      (err, doc) => {
+        // console.log(doc.status.updates[updateExist]);
+      }
+    );
+  } else {
+    user.status.updates.push({
+      id: id.toString(),
+      status: dataEntityId.status,
+      timestamp: Date.now(),
+      entity_id: dataEntityId.entityId,
+      total_items: null,
+    });
+  }
+};
+
 const requestProcessStatus = async (id, token, user, returnRequestId) => {
   let success = false;
   let retry = 0;
@@ -116,41 +145,15 @@ const requestProcessStatus = async (id, token, user, returnRequestId) => {
     tokenTest = await getToken(user._id); // Require a lot of calls to Mongoose
   }
   while (!success && retry < 20) {
-    retry += 1;
-
-    dataEntityId = await getProcessStatus(id, tokenTest || token);
     await sleep(500);
+    retry += 1;
+    dataEntityId = await getProcessStatus(id, tokenTest || token);
     if (
       dataEntityId.status === 'SUCCESS' &&
       dataEntityId.eventType === 'CREATE_OFFER_EXPORT'
     ) {
       if (user) {
-        const updateExist = user.status.updates.findIndex((update) => {
-          return update.id.toString() === id.toString();
-        });
-        if (updateExist !== -1) {
-          User.findOneAndUpdate(
-            { _id: user._id, 'status.updates.id': id.toString() },
-            {
-              $set: {
-                'status.updates.$.status': dataEntityId.status,
-                'status.updates.$.timestamp': Date.now(),
-              },
-            },
-            { new: true },
-            (err, doc) => {
-              // console.log(doc.status.updates[updateExist]);
-            }
-          );
-        } else {
-          user.status.updates.push({
-            id: id.toString(),
-            status: dataEntityId.status,
-            timestamp: Date.now(),
-            entity_id: dataEntityId.entityId,
-            total_items: null,
-          });
-        }
+        updateUser(user, dataEntityId, id);
       }
       if (returnRequestId) {
         const { entityId } = dataEntityId;
@@ -164,30 +167,7 @@ const requestProcessStatus = async (id, token, user, returnRequestId) => {
       dataEntityId.eventType === 'CREATE_OFFER_EXPORT'
     ) {
       if (user) {
-        const updateExist = user.status.updates.findIndex((update) => {
-          return update.id.toString() === id.toString();
-        });
-        console.log(updateExist);
-        if (updateExist !== -1) {
-          User.findOneAndUpdate(
-            { _id: user._id, 'status.updates.id': id.toString() },
-            {
-              $set: {
-                'status.updates.$.status': dataEntityId.status,
-                'status.updates.$.timestamp': Date.now(),
-              },
-            },
-            { new: true }
-          );
-        } else {
-          user.status.updates.push({
-            id: id.toString(),
-            status: dataEntityId.status,
-            timestamp: Date.now(),
-            entity_id: dataEntityId.entityId,
-            total_items: null,
-          });
-        }
+        updateUser(user, dataEntityId, id);
       }
       return false;
     }
@@ -197,6 +177,12 @@ const requestProcessStatus = async (id, token, user, returnRequestId) => {
     ) {
       return dataEntityId.entityId;
     }
+    if (
+      dataEntityId.eventType === 'UPDATE_OFFER_PRICE' &&
+      dataEntityId.status === 'FAILURE'
+    ) {
+      return false;
+    }
   }
   if (
     retry > 0 &&
@@ -204,33 +190,10 @@ const requestProcessStatus = async (id, token, user, returnRequestId) => {
     dataEntityId.eventType === 'CREATE_OFFER_EXPORT'
   ) {
     if (user) {
-      const updateExist = user.status.updates.findIndex((update) => {
-        return update.id.toString() === id.toString();
-      });
-      if (updateExist !== -1) {
-        User.findOneAndUpdate(
-          { _id: user._id, 'status.updates.id': id.toString() },
-          {
-            $set: {
-              'status.updates.$.status': dataEntityId.status,
-              'status.updates.$.timestamp': Date.now(),
-            },
-          },
-          { new: true }
-        );
-      } else {
-        user.status.updates.push({
-          id: id.toString(),
-          status: dataEntityId.status,
-          timestamp: Date.now(),
-          entity_id: dataEntityId.entityId,
-          total_items: null,
-        });
-      }
+      updateUser(user, dataEntityId, id);
       setTimeout(async () => {
         const token = await getToken(user._id);
-        console.log('rerunning');
-        const entityId = await requestProcessStatus(id, token, user);
+        await requestProcessStatus(id, token, user);
       }, 1000 * 300);
     }
   }
@@ -254,7 +217,6 @@ const getProcessStatus = async (id, token) => {
   console.log(data.id, data.eventType, data.status);
   return data;
 };
-// e236fe2d-2506-4dfc-9dea-dc77dd4bb2f1
 
 const requestOffersList = async (token, user, returnRequestId) => {
   const response = await fetch('https://api.bol.com/retailer/offers/export', {

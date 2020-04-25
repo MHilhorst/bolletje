@@ -7,6 +7,7 @@ import {
   Redirect,
 } from 'react-router-dom';
 import RouteWrapper from './route-wrapper';
+import MediumSubscriptionWrapper from './medium-subscription-wrapper';
 import AdminWrapper from './admin-wrapper';
 import AdminUsers from '../admin-users';
 import AdminProducts from '../admin-products';
@@ -16,16 +17,12 @@ import AdminUsersDetailed from '../admin-users-detailed';
 import AdminRepricerOffer from '../admin-repriceroffers-detailed';
 import AdminProductsDetailed from '../admin-products-detailed';
 import Dashboard from '../dashboard';
-// import InventoryOverview from '../inventory-overview';
-// import Orders from '../orders';
-// import InventoryItemDetailed from '../inventory-item-detailed';
 import BaseLayout from '../../layouts/base-layout';
-// import OrderDetailed from '../order-detailed';
 import Login from '../login';
 import Register from '../register';
-// import CreateInventoryItem from '../create-inventory-item';
 import Loading from '../loading';
 import PriceChecker from '../price-checker';
+import PriceCheckerDetailed from '../price-checker-detailed';
 import Profile from '../profile';
 import ProductManagement from '../product-management';
 import ProductSoldAnalytics from '../product-sold-analytics';
@@ -123,35 +120,8 @@ class App extends React.Component {
               user={this.state.user}
               session={this.state.session}
               {...this.props}
-            />{' '}
-            {/* <RouteWrapper
-              exact
-              path="/inventory-overview"
-              component={InventoryOverview}
-              layout={BaseLayout}
-              user={this.state.user}
-              session={this.state.session}
-              {...this.props}
             />
-            <RouteWrapper
-              exact
-              path="/inventory/:id"
-              component={InventoryItemDetailed}
-              layout={BaseLayout}
-              user={this.state.user}
-              session={this.state.session}
-              {...this.props}
-            />
-            <RouteWrapper
-              exact
-              path="/inventory-overview/create"
-              component={CreateInventoryItem}
-              layout={BaseLayout}
-              user={this.state.user}
-              session={this.state.session}
-              {...this.props}
-            /> */}
-            <RouteWrapper
+            <MediumSubscriptionWrapper
               exact
               path="/price-checker"
               component={PriceChecker}
@@ -160,24 +130,16 @@ class App extends React.Component {
               session={this.state.session}
               {...this.props}
             />
-            {/* <RouteWrapper
+            <MediumSubscriptionWrapper
               exact
-              path="/orders"
-              component={Orders}
+              path="/price-checker/:id"
+              component={PriceCheckerDetailed}
               layout={BaseLayout}
               user={this.state.user}
               session={this.state.session}
               {...this.props}
             />
-            <RouteWrapper
-              exact
-              path="/order/:id"
-              component={OrderDetailed}
-              layout={BaseLayout}
-              user={this.state.user}
-              session={this.state.session}
-              {...this.props}
-            /> */}
+
             <RouteWrapper
               exact
               path="/profile"
