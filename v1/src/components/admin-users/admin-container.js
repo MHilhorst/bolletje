@@ -35,7 +35,9 @@ export default class AdminContainer extends React.Component {
         registrationDate: user.registration_timestamp,
         accountType: user.subscription.account_type,
         adminAccount: user.admin_account,
-        itemTracked: `${user.bol_track_items.length}/${user.max_track_items}`,
+        itemTracked: `${user.bol_track_items.length}/${
+          user.subscription.max_track_items || 2
+        }`,
       };
     });
     this.setState({ tableData });

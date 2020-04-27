@@ -1,11 +1,11 @@
 const RepricerOffer = require('../models/RepricerOffer');
 const User = require('../models/User');
 const { getToken } = require('./accessToken');
-const { getOffer, updatePrice } = require('./bolServices');
+const { getOffer, updatePrice, getCommission } = require('./bolServices');
 const request = require('request');
 const fs = require('fs');
 const { syncOfferWithDataFeed } = require('./datafeed');
-const { getProductOffers } = require('./openApiBolServices');
+const { getProductOffers, showTotalCalls } = require('./openApiBolServices');
 const CronJob = require('cron').CronJob;
 
 const setRepricerOffer = async (offerData, user) => {
@@ -53,6 +53,12 @@ const getTypesOfOffers = async (repriceOffer, user) => {
   allOffers = allOffers.offers.filter((offer) => {
     return offer.condition === 'Nieuw';
   });
+  const allOffersOwnOfferHighlighted = allOffers.map((offer) => {
+    return {
+      ...offer,
+      ownOffer: offer.seller.displayName === user.bol_shop_name ? true : false,
+    };
+  });
   let allOffersWithoutOwnOffer = allOffers.filter((offer) => {
     return (
       offer.seller.displayName !== user.bol_shop_name &&
@@ -86,7 +92,7 @@ const getTypesOfOffers = async (repriceOffer, user) => {
   const lowestPriceOffer = allOffersWithoutOwnOffer.sort((a, b) => {
     return a.price - b.price;
   })[0];
-  const bestOffer = allOffersWithoutOwnOffer
+  const bestOffer = allOffers
     .filter((offer) => {
       return offer.bestOffer === true;
     })
@@ -138,6 +144,7 @@ const getTypesOfOffers = async (repriceOffer, user) => {
     lowestPriceOffer,
     bestOffer,
     customSelectedOffers,
+    allOffersOwnOfferHighlighted,
   };
 };
 
@@ -159,6 +166,8 @@ const autoUpdatePrice = async (
     };
     repriceOffer.price = newPrice;
     repriceOffer.updates.push(updateInfo);
+    const commission = await getCommission(repriceOffer.ean, newPrice, token);
+    repriceOffer.commission = commission;
     return true;
   }
 };
@@ -195,40 +204,57 @@ const monitorRepricerOffer = async (repriceOffer, userId) => {
   } else {
     const objectOffers = await getTypesOfOffers(repriceOffer, user);
     repriceOffer.bol_active = true;
+    repriceOffer.offers_visible = objectOffers.allOffersOwnOfferHighlighted;
     repriceOffer.total_sellers = objectOffers.allOffers.length;
     repriceOffer.best_offer = objectOffers.bestOffer;
     repriceOffer.best_offer_is_own_offer =
       objectOffers.bestOffer.id === objectOffers.ownOfferFromBolStoreView.id
         ? true
         : false;
-
-    // const newPrice = await getNewPrice(repriceOffer, objectOffers);
-    if (
-      objectOffers.lowestPriceOffer.price < ownPrice &&
-      objectOffers.lowestPriceOffer.price - 0.01 > repriceOffer.min_price
-    ) {
-      let minusPrice = repriceOffer.repricer_increment
-        ? repriceOffer.repricer_increment
-        : (objectOffers.ownOfferFromBolStoreView.price / 100) * 5;
-      const newPrice = objectOffers.lowestPriceOffer.price - minusPrice;
-      updatedRepriceOffer = await autoUpdatePrice(
-        repriceOffer,
-        userId,
-        newPrice,
-        objectOffers
-      );
-    }
-    if (ownPrice < objectOffers.lowestPriceOffer.price) {
-      const newPrice = objectOffers.lowestPriceOffer.price - 0.01;
-      updatedRepriceOffer = await autoUpdatePrice(
-        repriceOffer,
-        userId,
-        newPrice,
-        objectOffers
-      );
-    }
-    if (updatedRepriceOffer) {
-      console.log('updating product');
+    if (repriceOffer.repricer_active) {
+      console.log('changing price', ownPrice);
+      // const newPrice = await getNewPrice(repriceOffer, objectOffers);
+      if (
+        objectOffers.lowestPriceOffer.price < ownPrice &&
+        objectOffers.lowestPriceOffer.price - 0.01 > repriceOffer.min_price
+      ) {
+        let minusPrice = repriceOffer.repricer_increment
+          ? repriceOffer.repricer_increment
+          : (objectOffers.ownOfferFromBolStoreView.price / 100) * 5;
+        const newPrice = objectOffers.lowestPriceOffer.price - minusPrice;
+        // const newPrice = 70;
+        updatedRepriceOffer = await autoUpdatePrice(
+          repriceOffer,
+          userId,
+          newPrice,
+          objectOffers
+        );
+      }
+      if (ownPrice < objectOffers.lowestPriceOffer.price) {
+        let minusPrice = repriceOffer.repricer_increment
+          ? repriceOffer.repricer_increment
+          : (objectOffers.ownOfferFromBolStoreView.price / 100) * 5;
+        const newPrice = objectOffers.lowestPriceOffer.price - minusPrice;
+        // const newPrice = 70;
+        updatedRepriceOffer = await autoUpdatePrice(
+          repriceOffer,
+          userId,
+          newPrice,
+          objectOffers
+        );
+      }
+      if (updatedRepriceOffer) {
+        await repriceOffer.save();
+      }
+    } else {
+      console.log('saving product');
+      const updateInfo = {
+        time_checked: Date.now(),
+        buy_box: objectOffers.bestOffer,
+        new_price: repriceOffer.price,
+        own_offer: objectOffers.ownOfferFromBolStoreView,
+      };
+      repriceOffer.updates.push(updateInfo);
       await repriceOffer.save();
     }
   }
@@ -250,14 +276,14 @@ const stopCronJobRepricer = () => {
 };
 
 // const cronMonitor = new CronJob('0 */03 * * * *', () => {
-const cronMonitor = new CronJob('*/20 * * * * *', () => {
+const cronMonitor = new CronJob('0 */01 * * * *', () => {
   getRepricerOffers(1);
-  console.log('updated');
+  console.log('updated Monitor');
 });
 
-const cronCSVImport = new CronJob('0 */02 * * * *', () => {
+const cronCSVImport = new CronJob('0 */01 * * * *', () => {
   importCSV();
-  console.log('updated imports');
+  console.log('updated Imports');
 });
 const getCronJobStatusRepricer = () => {
   return {
@@ -271,14 +297,15 @@ const getRepricerOffers = async (time) => {
   let test = new Date(new Date().getTime() - time * 1000);
   const repricerOffers = await RepricerOffer.find({
     last_update: { $lte: test },
-    repricer_active: true,
   })
     .sort({ last_update: 1 })
     .limit(100)
     .exec();
+  console.log('Amount of repricer offers :', repricerOffers.length);
   for (let i = 0; i < repricerOffers.length; i++) {
-    monitorRepricerOffer(repricerOffers[0], repricerOffers[0].user_id);
+    monitorRepricerOffer(repricerOffers[i], repricerOffers[i].user_id);
   }
+  showTotalCalls();
 };
 
 const importCSV = async () => {
@@ -312,7 +339,6 @@ const importCSV = async () => {
       })
         .pipe(file)
         .on('finish', () => {
-          console.log(`The file is finished downloading.`);
           resolve();
         })
         .on('error', (error) => {

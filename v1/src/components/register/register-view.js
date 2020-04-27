@@ -72,7 +72,8 @@ class RegisterView extends React.Component {
           });
         }
         if (data.user) {
-          this.props.history.push('/login');
+          // this.props.history.push({ pathname: '/login',state:{ verfiyEmail: true} });
+          this.props.history.push('/login', { email: true });
         }
       } else {
         this.setState({
@@ -107,7 +108,7 @@ class RegisterView extends React.Component {
               marginTop: 20,
             }}
           >
-            <div style={{ width: '80%  ' }}>
+            <div style={{ width: '90%  ' }}>
               <LoginInput>
                 <Input
                   prefix={<MailOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}

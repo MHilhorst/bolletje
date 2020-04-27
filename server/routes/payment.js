@@ -99,8 +99,8 @@ router.post('/upgrade', auth, async (req, res) => {
           .create({
             amount: { value: '5.00', currency: 'EUR' },
             description: 'Snapse.nl | SMALL Abonnement',
-            redirectUrl: 'http://ce05dd6e.ngrok.io/dashboard',
-            webhookUrl: 'http://ce05dd6e.ngrok.io/api/payment/webhook',
+            redirectUrl: `${process.env.CLIENTURL}/dashboard`,
+            webhookUrl: `${process.env.CLIENTURL}/api/payment/webhook`,
             metadata: { userId: user._id, subscription: 'SMALL' },
             sequenceType: 'first',
             customerId,
@@ -129,8 +129,8 @@ router.post('/upgrade', auth, async (req, res) => {
           .create({
             amount: { value: '10.00', currency: 'EUR' },
             description: 'Snapse.nl | MEDIUM Abonnement',
-            redirectUrl: 'http://ce05dd6e.ngrok.io/dashboard',
-            webhookUrl: 'http://ce05dd6e.ngrok.io/api/payment/webhook',
+            redirectUrl: `${process.env.CLIENTURL}/dashboard`,
+            webhookUrl: `${process.env.CLIENTURL}/api/payment/webhook`,
             metadata: { userId: user._id, subscription: 'MEDIUM' },
             sequenceType: 'first',
             customerId,

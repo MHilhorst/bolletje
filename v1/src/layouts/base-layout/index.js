@@ -177,7 +177,8 @@ class BaseLayout extends React.Component {
             </SubMenu> */}
             {this.props.user.admin_account && (
               <SubMenu
-                key="5"
+                key="6
+                "
                 title={
                   <span>
                     <Icon type="import" />

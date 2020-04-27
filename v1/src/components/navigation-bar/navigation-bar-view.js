@@ -56,7 +56,7 @@ class NavigationBarView extends React.Component {
       >
         <Tag color="green" style={{ marginTop: 4, marginBottom: 4 }}>
           {this.props.user.bol_track_items.length}/
-          {this.props.user.max_track_items}
+          {this.props.user.subscription.max_track_items}
         </Tag>
         <span>Items tracked</span>
       </div>

@@ -83,6 +83,9 @@ const RepriceOffer = new Schema({
     type: Boolean,
     default: false,
   },
+  commission: {
+    type: Object,
+  },
 });
 
 RepriceOffer.pre('save', function (next) {

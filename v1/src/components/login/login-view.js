@@ -11,6 +11,7 @@ import { setToken, userLogin } from '../../utils/auth';
 import { MailOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
+
 class LoginView extends React.Component {
   constructor(props) {
     super(props);
@@ -47,6 +48,16 @@ class LoginView extends React.Component {
     }
   };
 
+  componentDidMount() {
+    // if (
+    //   this.props.location.state &&
+    //   this.props.location.state.email &&
+    //   this.state.showEmail
+    // ) {
+    //   this.setState({ showEmail: false });
+    //   openNotificationWithIcon('success');
+    // }
+  }
   handleEnterSubmit = async (e) => {
     if (e.key === 'Enter') {
       this.handleSubmit();

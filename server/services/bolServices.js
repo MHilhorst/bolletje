@@ -288,6 +288,7 @@ const createOffer = async (
 };
 
 const updatePrice = async (offerId, price, token) => {
+  console.log(price);
   const response = await fetch(
     `https://api.bol.com/retailer/offers/${offerId}/price`,
     {
@@ -352,7 +353,6 @@ const updateAvailability = async (offerId, onHold, token) => {
 };
 
 const getCommission = async (ean, price, token) => {
-  console.log(ean);
   const response = await fetch('https://api.bol.com/retailer/commission', {
     method: 'POST',
     headers: postHeaders(token),
@@ -370,9 +370,10 @@ const getCommission = async (ean, price, token) => {
   if (data.commissions) {
     return data.commissions[0];
   } else {
-    return { error: true };
+    return false;
   }
 };
+
 const getOpenOrders = async (token) => {
   const response = await fetch(
     'https://api.bol.com/retailer-demo/orders?fulfilment-method=FBR',

@@ -18,7 +18,6 @@ const syncOfferWithDataFeed = async (user) => {
           { updates: 0, offers_visible: 0 }
         ).exec();
         if (repricerOffer) {
-          console.log(row.ean);
           offersInDataFeed.push(row.ean);
           if (row.repricer_increment) {
             repricerOffer.repricer_increment = Number(row.repricer_increment);
@@ -32,6 +31,7 @@ const syncOfferWithDataFeed = async (user) => {
             row.active == 'false' &&
             row.original_price
           ) {
+            console.log('updating price with', row.original_price);
             repricerOffer.repricer_active = false;
             const token = await getToken(user._id);
             const data = await updatePrice(
@@ -49,6 +49,7 @@ const syncOfferWithDataFeed = async (user) => {
             row.original_price
           ) {
             repricerOffer.repricer_active = false;
+            console.log('updating price with', row.original_price);
             const token = await getToken(user._id);
             const data = await updatePrice(
               repricerOffer.offer_id,

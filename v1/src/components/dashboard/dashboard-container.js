@@ -15,7 +15,9 @@ const openNotificationWithIcon = (type) => {
 export default class DashboardContainer extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      resendClicked: true,
+    };
   }
   async componentDidMount() {
     const data = await getMessages();
@@ -28,6 +30,7 @@ export default class DashboardContainer extends React.Component {
     const data = await resendEmailVerification();
     if (data) {
       openNotificationWithIcon('success');
+      this.setState({ resendClicked: false });
     }
   };
   render() {

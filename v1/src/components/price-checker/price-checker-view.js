@@ -153,7 +153,7 @@ export default class PriceCheckerView extends React.Component {
         dataIndex: 'incrementAmount',
         key: 'incrementAmount',
         render: (value) => {
-          return '€ ' + value;
+          return value ? '€ ' + value : null;
         },
       },
       {

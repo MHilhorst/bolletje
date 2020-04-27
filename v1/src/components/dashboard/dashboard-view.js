@@ -38,12 +38,12 @@ class DashboardView extends React.Component {
             lg={{ span: 12, offset: 6 }}
             style={{ marginTop: 20 }}
           >
-            {!this.props.user.activated && (
+            {!this.props.user.activated && this.props.resendClicked && (
               <Alert
                 message={
                   <>
                     <span>
-                      Verifieer je e-mail adres. Er is een e-mail verstuurd naar
+                      Verifieer je e-mail adres. Er is een e-mail verstuurd naar{' '}
                       {this.props.user.email}.{' '}
                     </span>
                     <span
