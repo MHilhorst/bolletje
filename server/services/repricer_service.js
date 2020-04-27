@@ -276,12 +276,12 @@ const stopCronJobRepricer = () => {
 };
 
 // const cronMonitor = new CronJob('0 */03 * * * *', () => {
-const cronMonitor = new CronJob('0 */01 * * * *', () => {
+const cronMonitor = new CronJob('0 */50 * * * *', () => {
   getRepricerOffers(1);
   console.log('updated Monitor');
 });
 
-const cronCSVImport = new CronJob('0 */01 * * * *', () => {
+const cronCSVImport = new CronJob('0 */50 * * * *', () => {
   importCSV();
   console.log('updated Imports');
 });
