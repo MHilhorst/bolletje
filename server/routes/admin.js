@@ -98,6 +98,22 @@ router.get('/users', async (req, res, next) => {
   }
 });
 
+router.put('/users/:id', async (req, res) => {
+  let updateQuery = { 'subscription.max_track_items': req.body.maxItems };
+  try {
+    User.updateOne(
+      { _id: req.params.id },
+      { $set: updateQuery },
+      (err, raw) => {
+        if (err) console.log(err);
+        res.status(201).json({ success: true });
+      }
+    );
+  } catch (err) {
+    res.send({ err });
+  }
+});
+
 router.post('/reload', async (req, res) => {
   if (req.body.productId) {
     const finished = await priceMonitor(req.body.productId);

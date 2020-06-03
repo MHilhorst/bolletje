@@ -4,6 +4,40 @@ const { getToken } = require('./accessToken');
 const { updatePrice } = require('./bolServices');
 const RepricerOffer = require('../models/RepricerOffer');
 
+const syncOfferWithDataFeedV2 = async (user, repriceOffer) => {
+  return new Promise((resolve, reject) => {
+    fs.createReadStream(`uploads/csv/${repriceOffer.strategy._id}.csv`)
+      .pipe(csv())
+      .on('data', async (row) => {
+        if (repriceOffer.ean === row.ean) {
+          if (row.price) {
+            try {
+              console.log(
+                'updating datafeed product price with ean',
+                repriceOffer.ean
+              );
+              const token = await getToken(user._id);
+              console.log(token);
+              const data = await updatePrice(
+                repriceOffer.offer_id,
+                Number(row.price),
+                token
+              );
+              if (data) {
+                repriceOffer.price = Number(row.price);
+                await repriceOffer.save();
+                resolve();
+              }
+            } catch (err) {
+              console.log(err);
+              reject();
+            }
+          }
+        }
+      });
+  });
+};
+
 const syncOfferWithDataFeed = async (user) => {
   let offersInDataFeed = [];
   return new Promise((resolve, reject) => {
@@ -69,3 +103,4 @@ const syncOfferWithDataFeed = async (user) => {
 };
 
 module.exports.syncOfferWithDataFeed = syncOfferWithDataFeed;
+module.exports.syncOfferWithDataFeedV2 = syncOfferWithDataFeedV2;

@@ -50,6 +50,14 @@ export const LoginHeader = Styled.div`
     margin-bottom:20px
 `;
 
+export const StrategyCreateBox = Styled.div`
+  margin-top:40px;
+  justify-content: center;
+`;
+
+export const StrategyRadioOption = Styled.div`
+text-align: center;
+`;
 export const subText = Styled.text`
     color:#f2f4f5;
     font-size:1rem;

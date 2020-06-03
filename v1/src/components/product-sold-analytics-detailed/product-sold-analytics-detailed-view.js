@@ -187,11 +187,6 @@ export default class ProductSoldAnalyticsDetailedView extends React.Component {
             <Descriptions.Item label="Price suggestion" span={2}>
               <span onClick={this.showPriceSuggestions}>48.43</span>
             </Descriptions.Item>
-            <Descriptions.Item label="Calculate Profit" span={1}>
-              <Button onClick={() => this.setState({ visible: true })}>
-                Calculate Profit
-              </Button>
-            </Descriptions.Item>
             <Descriptions.Item label="Chart Type" span={2}>
               <Select
                 defaultValue="stepline"

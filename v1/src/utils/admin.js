@@ -1,5 +1,22 @@
 import { getSession } from './auth';
 
+export const updateMaxItems = async (userId, maxItems) => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/admin/users/${userId}`,
+    {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({ maxItems }),
+    }
+  );
+  return await response.json();
+};
+
 export const getUsers = async (query) => {
   const jwt = await getSession();
   if (query) {

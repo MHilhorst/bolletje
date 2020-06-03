@@ -35,6 +35,23 @@ export const getRepricerOffer = async (id) => {
   return await response.json();
 };
 
+export const createRepricerStrategy = async (query) => {
+  console.log(query);
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/repricer/strategy`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify(query),
+    }
+  );
+  return await response.json();
+};
+
 export const updateRepricerOffer = async (query, id) => {
   const jwt = await getSession();
   const response = await fetch(
@@ -146,6 +163,81 @@ export const setSelectedOffers = async (offers) => {
       },
       body: JSON.stringify({
         offers,
+      }),
+    }
+  );
+  return await response.json();
+};
+
+export const getStrategies = async () => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/repricer/strategy`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
+  return await response.json();
+};
+
+export const setStrategyForOffers = async (
+  selectedExistingOffers,
+  selectedStrategy
+) => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/repricer/strategy`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        selectedExistingOffers,
+        selectedStrategy,
+      }),
+    }
+  );
+  return await response.json();
+};
+
+export const activateStrategy = async (selectedStrategy, activation) => {
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/repricer/strategy/activate`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        selectedStrategy,
+        activation,
+      }),
+    }
+  );
+  return await response.json();
+};
+
+export const deleteStrategies = async (strategies) => {
+  console.log('yes');
+  const jwt = await getSession();
+  const response = await fetch(
+    `${process.env.REACT_APP_API_HOST}/api/repricer/strategy`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        strategies,
       }),
     }
   );

@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/User');
 const RepricerOffer = require('../models/RepricerOffer');
+const RepricerStrategy = require('../models/RepricerStrategy');
 const { getToken } = require('../services/accessToken');
 const {
   getCommission,
@@ -9,9 +10,13 @@ const {
   updatePrice,
   requestProcessStatus,
 } = require('../services/bolServices');
+const { monitorRepricerOffer } = require('../services/repricer_service');
 const { syncOfferWithDataFeed } = require('../services/datafeed');
 const request = require('request');
-const { setRepricerOffer } = require('../services/repricer_service.js');
+const {
+  setRepricerOffer,
+  importStrategyDataFeed,
+} = require('../services/repricer_service.js');
 const { getOtherOffers } = require('../services/openApiBolServices');
 const csv = require('csv-parser');
 const fs = require('fs');
@@ -24,6 +29,91 @@ router.post('/commission', async (req, res) => {
   res.json({ ...commission });
 });
 
+router.post('/strategy', async (req, res) => {
+  const newStrategy = new RepricerStrategy({
+    ...req.body,
+    user_id: req.user._id,
+  });
+  await newStrategy.save();
+  if (newStrategy.strategy_type === 'datafeed') {
+    importStrategyDataFeed(newStrategy._id, newStrategy.datafeed_url);
+  }
+  res.status(201).json({ success: true });
+});
+
+router.get('/strategy', async (req, res) => {
+  const strategies = await RepricerStrategy.find({
+    user_id: req.user._id,
+  }).exec();
+  res.json({ strategies });
+});
+
+router.delete('/strategy', async (req, res) => {
+  const strategies = req.body.strategies;
+  console.log(strategies);
+  RepricerStrategy.deleteMany(
+    {
+      _id: { $in: strategies },
+    },
+    (err, raw) => {
+      if (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+      console.log(raw);
+      res.json({ success: true });
+    }
+  );
+});
+
+router.put('/strategy', async (req, res) => {
+  const offers = req.body.selectedExistingOffers;
+  const strategy = req.body.selectedStrategy;
+  RepricerOffer.updateMany(
+    {
+      _id: {
+        $in: offers,
+      },
+    },
+    { $set: { strategy: strategy } },
+    { upsert: true },
+    (err, raw) => {
+      if (err) console.log(err);
+      res.status(200).json({ success: true });
+    }
+  );
+});
+
+router.put('/strategy/activate', async (req, res) => {
+  const activate = req.body.activation ? true : false;
+  const strategy = req.body.selectedStrategy;
+  const strategyUpdate = RepricerStrategy.updateOne(
+    {
+      _id: strategy,
+    },
+    { $set: { activated: activate } },
+    (err, raw) => {
+      if (err) console.log(err);
+      return true;
+    }
+  );
+  const repricerOfferUpdate = RepricerOffer.updateMany(
+    {
+      strategy: req.body.selectedStrategy,
+    },
+    { $set: { repricer_active: activate } },
+    { upsert: true },
+    (err, raw) => {
+      if (err) console.log(err);
+      return true;
+    }
+  );
+  const repriceOfferUpdate = await RepricerOffer.find;
+  Promise.all([repricerOfferUpdate, strategyUpdate]).then((completed) => {
+    console.log('finished');
+    res.status(200).json({ success: true });
+  });
+});
 router.post('/offers/activate', async (req, res) => {
   const user = await User.findOne({ _id: req.user._id }).exec();
   if (30 - user.own_offers.length >= req.body.offers.length) {
@@ -145,11 +235,12 @@ router.get('/offers/:id', async (req, res) => {
 });
 
 router.put('/offers/:id', async (req, res) => {
-  console.log(req.body.customSelectionCompetitors);
   const repriceOffer = await RepricerOffer.findOne({
     user_id: req.user._id,
     _id: req.params.id,
-  }).exec();
+  })
+    .populate('strategy')
+    .exec();
   if (req.body.repricerActive)
     repriceOffer.repricer_active = req.body.repricerActive;
   if (req.body.selectedCompetitors)
@@ -157,14 +248,24 @@ router.put('/offers/:id', async (req, res) => {
   if (req.body.hasOwnProperty('customSelectionCompetitors'))
     repriceOffer.custom_selection_competitors =
       req.body.customSelectionCompetitors;
+  if (req.body.shippingCost) repriceOffer.shipping_cost = req.body.shippingCost;
+  if (req.body.purchasePrice)
+    repriceOffer.purchase_price = req.body.purchasePrice;
   await repriceOffer.save();
-  res.json({ success: true });
+  if (repriceOffer.repricer_active) {
+    await monitorRepricerOffer(repriceOffer, req.user._id);
+    res.json({ success: true });
+  } else {
+    res.json({ success: true });
+  }
 });
 
 router.get('/offers', async (req, res) => {
   const repricerOffers = await RepricerOffer.find({
     user_id: req.user._id,
-  }).exec();
+  })
+    .populate('strategy')
+    .exec();
   // getRepricerOffers(1);
   res.json({ offers: repricerOffers });
 });

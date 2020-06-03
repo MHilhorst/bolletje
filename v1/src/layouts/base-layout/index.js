@@ -98,18 +98,35 @@ class BaseLayout extends React.Component {
                 <span>Track New Product</span>
               </Menu.Item>
             </SubMenu>
-            <Menu.Item
+            <SubMenu
               key="5"
-              onClick={() => this.props.history.push('/price-checker')}
+              title={
+                <>
+                  <UndoOutlined />
+                  <span>RePricer </span>
+                  {!this.state.collapsed && (
+                    <Tag color="green" style={{}}>
+                      BETA
+                    </Tag>
+                  )}
+                </>
+              }
             >
-              <UndoOutlined />
-              <span>RePricer </span>
-              {!this.state.collapsed && (
-                <Tag color="green" style={{}}>
-                  BETA
-                </Tag>
-              )}
-            </Menu.Item>
+              <Menu.Item
+                key="6"
+                onClick={() => this.props.history.push('/price-checker')}
+              >
+                <UndoOutlined />
+                <span>Overview </span>
+              </Menu.Item>
+              <Menu.Item
+                key="7"
+                onClick={() => this.props.history.push('/strategy-builder')}
+              >
+                <Icon type="upload" />
+                <span>Strategy Builder</span>
+              </Menu.Item>
+            </SubMenu>
 
             {/* <Menu.Item
               key="5"
@@ -177,7 +194,7 @@ class BaseLayout extends React.Component {
             </SubMenu> */}
             {this.props.user.admin_account && (
               <SubMenu
-                key="6
+                key="8
                 "
                 title={
                   <span>
@@ -187,7 +204,7 @@ class BaseLayout extends React.Component {
                 }
               >
                 <Menu.Item
-                  key="6"
+                  key="9"
                   onClick={() =>
                     this.props.history.push({
                       pathname: '/admin/users',
@@ -199,7 +216,7 @@ class BaseLayout extends React.Component {
                   <span>Users</span>
                 </Menu.Item>
                 <Menu.Item
-                  key="7"
+                  key="10"
                   onClick={() =>
                     this.props.history.push({
                       pathname: '/admin/products',
@@ -211,7 +228,7 @@ class BaseLayout extends React.Component {
                   <span>Products</span>
                 </Menu.Item>
                 <Menu.Item
-                  key="8"
+                  key="11"
                   onClick={() =>
                     this.props.history.push({
                       pathname: '/admin/dashboard',

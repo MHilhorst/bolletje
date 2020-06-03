@@ -25,9 +25,9 @@ const UserSchema = new Schema({
   },
   subscription: {
     account_type: { type: String, default: 'TRIAL' },
-    max_track_items: { type: Number },
-    repricer_enabled: { type: Boolean },
-    repricer_max_track_items: { type: Number },
+    max_track_items: { type: Number, default: 2 },
+    repricer_enabled: { type: Boolean, default: true },
+    repricer_max_track_items: { type: Number, default: 2 },
     mollie_customer: { type: Object },
     payment_history: { type: Array },
     mollie_mandate: { type: Object },

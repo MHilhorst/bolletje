@@ -18,6 +18,7 @@ const RepriceOffer = new Schema({
   stock: {
     type: Number,
   },
+  strategy: { type: Schema.Types.ObjectId, ref: 'RepricerStrategy' },
   delivery_code: {
     type: String,
   },
@@ -29,6 +30,18 @@ const RepriceOffer = new Schema({
     type: Boolean,
   },
   price: {
+    type: Number,
+  },
+  purchase_price: {
+    type: Number,
+  },
+  shipping_cost: {
+    type: Number,
+  },
+  standard_commission_fixed_amount: {
+    type: Number,
+  },
+  standard_commission_percentage: {
     type: Number,
   },
   total_sellers: {
@@ -82,6 +95,9 @@ const RepriceOffer = new Schema({
   custom_selection_competitors: {
     type: Boolean,
     default: false,
+  },
+  updated_best_offer_price: {
+    type: Boolean,
   },
   commission: {
     type: Object,

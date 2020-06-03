@@ -1,12 +1,20 @@
 import React from 'react';
-import { Tag, Descriptions, Timeline } from 'antd';
+import { Tag, Descriptions, Timeline, Button, InputNumber } from 'antd';
 import { Box } from '../../styles/style';
 
 export default class AdminUsersDetailedView extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      updateMaxItems: false,
+    };
   }
+  handleUpdateMaxItemsShowInput = () => {
+    this.setState({ updateMaxItems: !this.state.updateMaxItems });
+  };
+  handleUpdateMaxItemsChange = (e) => {
+    this.props.onChange('maxItems', e);
+  };
   render() {
     return (
       <>
@@ -59,7 +67,30 @@ export default class AdminUsersDetailedView extends React.Component {
               })}
             </Descriptions.Item>
             <Descriptions.Item label="Max Track Items" span={3}>
-              {this.props.childUser.max_track_items}
+              {!this.state.updateMaxItems && (
+                <Button
+                  type="link"
+                  onClick={this.handleUpdateMaxItemsShowInput}
+                >
+                  {this.props.childUser.subscription.max_track_items}
+                </Button>
+              )}
+              {this.state.updateMaxItems && (
+                <>
+                  <InputNumber
+                    min={0}
+                    max={100}
+                    defaultValue={this.props.childUser.max_track_items}
+                    onChange={this.handleUpdateMaxItemsChange}
+                  />
+                  <Button
+                    style={{ marginLeft: 6 }}
+                    onClick={this.props.handleUpdateMaxUpdate}
+                  >
+                    Submit
+                  </Button>
+                </>
+              )}
             </Descriptions.Item>
             <Descriptions.Item label="Repricer Offers" span={3}>
               {this.props.childUser.own_offers.map((offer) => {

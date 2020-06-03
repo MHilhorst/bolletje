@@ -1,10 +1,14 @@
 const RepricerOffer = require('../models/RepricerOffer');
 const User = require('../models/User');
+const RepricerStrategy = require('../models/RepricerStrategy');
 const { getToken } = require('./accessToken');
 const { getOffer, updatePrice, getCommission } = require('./bolServices');
 const request = require('request');
 const fs = require('fs');
-const { syncOfferWithDataFeed } = require('./datafeed');
+const {
+  syncOfferWithDataFeed,
+  syncOfferWithDataFeedV2,
+} = require('./datafeed');
 const { getProductOffers, showTotalCalls } = require('./openApiBolServices');
 const CronJob = require('cron').CronJob;
 
@@ -21,7 +25,11 @@ const setRepricerOffer = async (offerData, user) => {
       offer.pricing.bundlePrices[0].quantity === 1
         ? offer.pricing.bundlePrices[0].price
         : NaN;
-
+    const commissionPercentage = await getCommission(
+      offer.ean,
+      priceSingleItem,
+      token
+    );
     const repricerOffer = new RepricerOffer({
       offer_id: offer.offerId,
       ean: offer.ean,
@@ -29,6 +37,8 @@ const setRepricerOffer = async (offerData, user) => {
       stock: offer.stock.amount || 0,
       delivery_code: offer.fulfilment.deliveryCode,
       price: priceSingleItem,
+      standard_commission_percentage: commissionPercentage.percentage,
+      standard_commission_fixed_amount: commissionPercentage.fixedAmount,
       user_id: user._id,
       product_title: offer.store.productTitle,
     });
@@ -89,9 +99,27 @@ const getTypesOfOffers = async (repriceOffer, user) => {
         sellerRegistrationDate: offer.seller.registrationDate,
       };
     })[0];
-  const lowestPriceOffer = allOffersWithoutOwnOffer.sort((a, b) => {
-    return a.price - b.price;
-  })[0];
+  const lowestPriceOffer = allOffersWithoutOwnOffer
+    .sort((a, b) => {
+      return a.price - b.price;
+    })
+    .map((offer) => {
+      return {
+        id: offer.id,
+        price: offer.price,
+        bestOffer: offer.bestOffer,
+        availabilityCode: offer.availabilityCode,
+        availabilityDescription: offer.availabilityDescription,
+        sellerId: offer.seller.id,
+        sellerType: offer.seller.sellerType,
+        sellerDisplayName: offer.seller.displayName,
+        sellerTopSeller: offer.seller.topSeller,
+        sellerRating: offer.seller.sellerRating,
+        sellerReviews: offer.seller.allReviewsCounts,
+        sellerApprovalPercentage: offer.seller.approvalPercentage,
+        sellerRegistrationDate: offer.seller.registrationDate,
+      };
+    })[0];
   const bestOffer = allOffers
     .filter((offer) => {
       return offer.bestOffer === true;
@@ -207,45 +235,122 @@ const monitorRepricerOffer = async (repriceOffer, userId) => {
     repriceOffer.offers_visible = objectOffers.allOffersOwnOfferHighlighted;
     repriceOffer.total_sellers = objectOffers.allOffers.length;
     repriceOffer.best_offer = objectOffers.bestOffer;
-    repriceOffer.best_offer_is_own_offer =
-      objectOffers.bestOffer.id === objectOffers.ownOfferFromBolStoreView.id
-        ? true
-        : false;
+    if (objectOffers.ownOfferFromBolStoreView) {
+      repriceOffer.best_offer_is_own_offer =
+        objectOffers.bestOffer.id === objectOffers.ownOfferFromBolStoreView.id
+          ? true
+          : false;
+    } else {
+      repriceOffer.best_offer_is_own_offer = false;
+    }
+
+    const targetType = repriceOffer.strategy.strategy_type;
+    const commissionPercentage =
+      (100 - repriceOffer.standard_commission_percentage) / 100;
+    const commissionFixedAmount = repriceOffer.standard_commission_fixed_amount;
+    const ROIPercentageMultipliedByCosts =
+      (repriceOffer.purchase_price + repriceOffer.shipping_cost) *
+        ((100 + repriceOffer.strategy.minimum_pricing.percentage) / 100) +
+      commissionFixedAmount;
+    const minimumPrice =
+      repriceOffer.strategy.minimum_pricing.pricing_type === 'ROI'
+        ? ROIPercentageMultipliedByCosts / commissionPercentage
+        : null;
+    const competeWithBol = repriceOffer.strategy.compete_with_bol;
+
     if (repriceOffer.repricer_active) {
-      console.log('changing price', ownPrice);
-      // const newPrice = await getNewPrice(repriceOffer, objectOffers);
-      if (
-        objectOffers.lowestPriceOffer.price < ownPrice &&
-        objectOffers.lowestPriceOffer.price - 0.01 > repriceOffer.min_price
-      ) {
-        let minusPrice = repriceOffer.repricer_increment
-          ? repriceOffer.repricer_increment
-          : (objectOffers.ownOfferFromBolStoreView.price / 100) * 5;
-        const newPrice = objectOffers.lowestPriceOffer.price - minusPrice;
-        // const newPrice = 70;
-        updatedRepriceOffer = await autoUpdatePrice(
-          repriceOffer,
-          userId,
-          newPrice,
-          objectOffers
-        );
+      const targetOffer =
+        targetType === 'targetBuyBox'
+          ? objectOffers.bestOffer
+          : objectOffers.lowestPriceOffer;
+      const shouldCompeteAgainstTargetOffer =
+        targetOffer.sellerId !== '0'
+          ? true
+          : targetOffer.sellerId === '0' && competeWithBol === true
+          ? true
+          : false;
+      // console.log(
+      //   'Compete with target offer?',
+      //   shouldCompeteAgainstTargetOffer
+      // );
+      repriceOffer.min_price = minimumPrice.toFixed(2);
+      if (repriceOffer.best_offer_is_own_offer) {
+        if (
+          repriceOffer.best_offer_is_own_offer &&
+          !repriceOffer.updated_best_offer_price
+        ) {
+          const {
+            increment_type,
+            pricing_increment_type,
+            pricing_increment,
+            increment_operator,
+          } = repriceOffer.strategy.buy_box_price_action;
+          const priceIncrement =
+            increment_type === 'currentPrice'
+              ? 0
+              : pricing_increment_type === '€' && increment_operator === 'plus'
+              ? pricing_increment
+              : pricing_increment_type === '€' && increment_operator === 'minus'
+              ? -pricing_increment
+              : pricing_increment_type === '%' && increment_operator === 'minus'
+              ? -repriceOffer.price * (pricing_increment / 100)
+              : pricing_increment_type === '%' && increment_operator === 'plus'
+              ? repriceOffer.price * (pricing_increment / 100)
+              : null;
+          console.log(priceIncrement);
+          const newPrice = repriceOffer.price + priceIncrement;
+          updatedRepriceOffer = await autoUpdatePrice(
+            repriceOffer,
+            userId,
+            newPrice,
+            objectOffers
+          );
+          repriceOffer.updated_best_offer_price = true;
+        }
+      } else {
+        repriceOffer.updated_best_offer_price = false;
+        if (targetOffer.price <= ownPrice && shouldCompeteAgainstTargetOffer) {
+          const pricingIncrement =
+            repriceOffer.strategy.price_increment_type === '€' &&
+            repriceOffer.strategy.increment_type === 'priceBelow'
+              ? repriceOffer.strategy.price_increment
+              : repriceOffer.strategy.price_increment_type === '%' &&
+                repriceOffer.strategy.increment_type === 'priceBelow'
+              ? (repriceOffer.strategy.price_increment / 100) *
+                targetOffer.price
+              : repriceOffer.strategy.increment_type === 'matchPrice'
+              ? 0
+              : null;
+          const newPrice = (targetOffer.price - pricingIncrement).toFixed(2);
+          if (newPrice > repriceOffer.min_price) {
+            updatedRepriceOffer = await autoUpdatePrice(
+              repriceOffer,
+              userId,
+              newPrice,
+              objectOffers
+            );
+          }
+        }
+        if (ownPrice < repriceOffer.min_price) {
+          updatedRepriceOffer = await autoUpdatePrice(
+            repriceOffer,
+            userId,
+            repriceOffer.min_price,
+            objectOffers
+          );
+        }
       }
-      if (ownPrice < objectOffers.lowestPriceOffer.price) {
-        let minusPrice = repriceOffer.repricer_increment
-          ? repriceOffer.repricer_increment
-          : (objectOffers.ownOfferFromBolStoreView.price / 100) * 5;
-        const newPrice = objectOffers.lowestPriceOffer.price - minusPrice;
-        // const newPrice = 70;
-        updatedRepriceOffer = await autoUpdatePrice(
-          repriceOffer,
-          userId,
-          newPrice,
-          objectOffers
-        );
-      }
-      if (updatedRepriceOffer) {
-        await repriceOffer.save();
-      }
+      await repriceOffer.save();
+    }
+    if (
+      repriceOffer.strategy.strategy_type === 'datafeed' &&
+      repriceOffer.repricer_active
+    ) {
+      // const data = await importStrategyDataFeed(
+      //   repriceOffer.strategy._id,
+      //   repriceOffer.strategy.datafeed_url
+      // );
+      syncOfferWithDataFeedV2(user, repriceOffer);
     } else {
       console.log('saving product');
       const updateInfo = {
@@ -258,6 +363,7 @@ const monitorRepricerOffer = async (repriceOffer, userId) => {
       await repriceOffer.save();
     }
   }
+  return true;
 };
 
 let startTrackingTime;
@@ -270,18 +376,18 @@ const startCronJobRepricer = () => {
 };
 
 const stopCronJobRepricer = () => {
-  cronMonitor.start();
-  cronCSVImport.start();
+  cronMonitor.stop();
+  cronCSVImport.stop();
   return true;
 };
 
 // const cronMonitor = new CronJob('0 */03 * * * *', () => {
-const cronMonitor = new CronJob('0 */50 * * * *', () => {
+const cronMonitor = new CronJob('*/20 * * * * *', () => {
   getRepricerOffers(1);
   console.log('updated Monitor');
 });
 
-const cronCSVImport = new CronJob('0 */50 * * * *', () => {
+const cronCSVImport = new CronJob('*/20 * * * * *', () => {
   importCSV();
   console.log('updated Imports');
 });
@@ -297,7 +403,9 @@ const getRepricerOffers = async (time) => {
   let test = new Date(new Date().getTime() - time * 1000);
   const repricerOffers = await RepricerOffer.find({
     last_update: { $lte: test },
+    _id: '5eb670ab460710688d785644',
   })
+    .populate('strategy')
     .sort({ last_update: 1 })
     .limit(100)
     .exec();
@@ -308,21 +416,57 @@ const getRepricerOffers = async (time) => {
   showTotalCalls();
 };
 
+const importStrategyDataFeed = async (id, url) => {
+  let file = fs.createWriteStream(`uploads/csv/${id}.csv`);
+  const data = new Promise((resolve, reject) => {
+    let stream = request({
+      /* Here you should specify the exact link to the file you are trying to download */
+      uri: url,
+      headers: {
+        Accept: 'text/csv; charset=utf-8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language':
+          'en-US,en;q=0.9,fr;q=0.8,ro;q=0.7,ru;q=0.6,la;q=0.5,pt;q=0.4,de;q=0.3',
+        'Cache-Control': 'max-age=0',
+        Connection: 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
+      },
+      /* GZIP true for most of the websites now, disable it if you don't need it */
+      gzip: true,
+    })
+      .pipe(file)
+      .on('finish', () => {
+        console.log(id);
+        resolve();
+      })
+      .on('error', (error) => {
+        reject(error);
+      });
+  });
+  data.then(() => {
+    console.log('Finished downloading file');
+    return true;
+  });
+};
+
 const importCSV = async () => {
   let test = new Date(new Date().getTime() - 1 * 1000);
-  const users = await User.find(
-    { 'csv.last_update': { $lte: test }, 'csv.url': { $ne: null } },
-    { bol_track_items: 0, own_offers: 0 }
-  )
-    .sort({ 'csv.last_update': 1 })
+  const strategies = await RepricerStrategy.find({
+    // 'csv.last_update': { $lte: test },
+    datafeed_url: { $ne: null },
+    strategy_type: 'datafeed',
+  })
+    // .sort({ 'csv.last_update': 1 })
     .limit(10)
     .exec();
-  users.forEach(async (user) => {
-    let file = fs.createWriteStream(`uploads/csv/${user._id}.csv`);
+  strategies.forEach(async (strategy) => {
+    let file = fs.createWriteStream(`uploads/csv/${strategy._id}.csv`);
     const data = new Promise((resolve, reject) => {
       let stream = request({
         /* Here you should specify the exact link to the file you are trying to download */
-        uri: user.csv.url,
+        uri: strategy.datafeed_url,
         headers: {
           Accept: 'text/csv; charset=utf-8',
           'Accept-Encoding': 'gzip, deflate, br',
@@ -345,17 +489,54 @@ const importCSV = async () => {
           reject(error);
         });
     });
-    data
-      .then(() => {
-        const promise = syncOfferWithDataFeed(user);
-        return promise;
-      })
-      .then((offersInDataFeed) => {
-        user.csv.ean = offersInDataFeed;
-        user.csv.last_update = Date.now();
-        user.save();
-      });
   });
+  // let test = new Date(new Date().getTime() - 1 * 1000);
+  // const users = await User.find(
+  //   { 'csv.last_update': { $lte: test }, 'csv.url': { $ne: null } },
+  //   { bol_track_items: 0, own_offers: 0 }
+  // )
+  //   .sort({ 'csv.last_update': 1 })
+  //   .limit(10)
+  //   .exec();
+  // users.forEach(async (user) => {
+  //   let file = fs.createWriteStream(`uploads/csv/${user._id}.csv`);
+  //   const data = new Promise((resolve, reject) => {
+  //     let stream = request({
+  //       /* Here you should specify the exact link to the file you are trying to download */
+  //       uri: user.csv.url,
+  //       headers: {
+  //         Accept: 'text/csv; charset=utf-8',
+  //         'Accept-Encoding': 'gzip, deflate, br',
+  //         'Accept-Language':
+  //           'en-US,en;q=0.9,fr;q=0.8,ro;q=0.7,ru;q=0.6,la;q=0.5,pt;q=0.4,de;q=0.3',
+  //         'Cache-Control': 'max-age=0',
+  //         Connection: 'keep-alive',
+  //         'Upgrade-Insecure-Requests': '1',
+  //         'User-Agent':
+  //           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
+  //       },
+  //       /* GZIP true for most of the websites now, disable it if you don't need it */
+  //       gzip: true,
+  //     })
+  //       .pipe(file)
+  //       .on('finish', () => {
+  //         resolve();
+  //       })
+  //       .on('error', (error) => {
+  //         reject(error);
+  //       });
+  //   });
+  //   data
+  //     .then(() => {
+  //       const promise = syncOfferWithDataFeed(user);
+  //       return promise;
+  //     })
+  //     .then((offersInDataFeed) => {
+  //       user.csv.ean = offersInDataFeed;
+  //       user.csv.last_update = Date.now();
+  //       user.save();
+  //     });
+  // });
 };
 
 module.exports.setRepricerOffer = setRepricerOffer;
@@ -363,4 +544,5 @@ module.exports.monitorRepricerOffer = monitorRepricerOffer;
 module.exports.getRepricerOffers = getRepricerOffers;
 module.exports.stopCronJobRepricer = stopCronJobRepricer;
 module.exports.startCronJobRepricer = startCronJobRepricer;
+module.exports.importStrategyDataFeed = importStrategyDataFeed;
 module.exports.getCronJobStatusRepricer = getCronJobStatusRepricer;

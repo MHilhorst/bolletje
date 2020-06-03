@@ -1,6 +1,7 @@
 import React from 'react';
 import { Statistic, Button, Row, Col, Typography, Input } from 'antd';
 import { Box } from '../../styles/style';
+import { withTranslation } from 'react-i18next';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -25,7 +26,7 @@ const getFormattedDate = (date) => {
   );
 };
 
-export default class AdminDashboardView extends React.Component {
+class AdminDashboardView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -163,3 +164,5 @@ export default class AdminDashboardView extends React.Component {
     );
   }
 }
+
+export default withTranslation()(AdminDashboardView);

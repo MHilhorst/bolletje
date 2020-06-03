@@ -29,9 +29,10 @@ const getSliderInfo = (offer, price) => {
   };
 
   offer.offers_visible.forEach((offerVisible, index) => {
+    if (offerVisible.bestOffer) console.log(offerVisible);
     return (sliderInfo[offerVisible.ownOffer ? price : offerVisible.price] = {
       style: {
-        marginTop: index % 2 ? -40 : 0,
+        marginTop: index % 3 ? -40 : 0,
       },
       label:
         offerVisible.bestOffer && offer.best_offer_is_own_offer ? (
@@ -52,7 +53,7 @@ const getSliderInfo = (offer, price) => {
                 src={Medal}
                 style={{ height: 13, width: 10 }}
                 alt={'Offer'}
-              />{' '}
+              />
               {offerVisible.price.toFixed(2)}
             </Tag>
           </Tooltip>
@@ -82,7 +83,7 @@ export default class PriceCheckerDetailedView extends React.Component {
         markers: {
           size: 2,
           discrete: this.props.offer.updates.map((update, index) => {
-            if (update.own_offer.bestOffer) {
+            if (update.own_offer && update.own_offer.bestOffer) {
               return {
                 seriesIndex: 0,
                 dataPointIndex: index,
@@ -149,10 +150,9 @@ export default class PriceCheckerDetailedView extends React.Component {
                   <span>{price}</span>
                   <br />
                   <span>
-                    {
+                    {this.props.offer.updates[dataPointIndex].own_offer &&
                       this.props.offer.updates[dataPointIndex].own_offer
-                        .sellerDisplayName
-                    }
+                        .sellerDisplayName}
                   </span>
                 </Card>
                 <Card

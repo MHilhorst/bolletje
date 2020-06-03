@@ -9,6 +9,8 @@ const morgan = require('morgan');
 const { getOffersDemo } = require('./services/bolServices');
 const compression = require('compression');
 const auth = require('./services/authMiddleware');
+const WC = require('./models/WooCommerceConnection');
+const { orderMonitor } = require('./services/order');
 const adminAuth = require('./services/adminAuthMiddleware');
 
 const app = express();
@@ -41,6 +43,7 @@ mongoose.connect(
       console.log(err);
     } else {
       console.log('Connected to Mongoose');
+      orderMonitor();
     }
   }
 );

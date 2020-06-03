@@ -287,8 +287,8 @@ const createOffer = async (
   }
 };
 
-const updatePrice = async (offerId, price, token) => {
-  console.log(price);
+const updatePrice = async (offerId, priceRaw, token) => {
+  const price = Number(priceRaw).toFixed(2);
   const response = await fetch(
     `https://api.bol.com/retailer/offers/${offerId}/price`,
     {
@@ -306,6 +306,8 @@ const updatePrice = async (offerId, price, token) => {
   const data = await response.json();
   if (data.id) {
     return await requestProcessStatus(data.id, token);
+  } else {
+    console.error(data);
   }
 };
 
@@ -402,8 +404,7 @@ const getDetailedOrder = async (orderId, token) => {
       },
     }
   );
-  const data = await response.json();
-  return data;
+  return await response.json();
 };
 
 module.exports.getInventory = getInventory;

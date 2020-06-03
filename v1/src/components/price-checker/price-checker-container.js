@@ -8,6 +8,8 @@ import {
   updateOffers,
   setSelectedOffers,
   setSpreadSheetImportUrl,
+  getStrategies,
+  setStrategyForOffers,
 } from '../../utils/repricer';
 import { notification, Statistic, Divider, Result, Button } from 'antd';
 
@@ -43,6 +45,8 @@ export default class PriceCheckerContainer extends React.Component {
       tableOffers: [],
       repricerActive: 0,
       selectedOffers: [],
+      loadingImport: false,
+      selectedExistingOffers: [],
     };
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -66,16 +70,21 @@ export default class PriceCheckerContainer extends React.Component {
   async componentDidMount() {
     const data = await getUserOwnOffers();
     const offerTableSchema = data.offers.map((offer, index) => {
+      console.log(offer);
       return {
         key: index,
         ean: offer.ean,
+        strategyName: offer.strategy ? offer.strategy.strategy_name : null,
         productName: offer.product_title,
+        datafeed: offer.strategy ? offer.strategy.datafeed_url : null,
         totalSellers: offer.total_sellers,
         currentPrice: offer.price,
         bestOffer: offer.best_offer_is_own_offer,
         incrementAmount: offer.repricer_increment,
         currentStock: offer.stock,
         minPrice: offer.min_price,
+        purchaseCosts: Number(offer.purchase_price),
+        shippingCosts: Number(offer.shipping_cost),
         liveTracking: offer.repricer_active,
         bolActive: offer.bol_active,
         id: offer._id,
@@ -84,6 +93,10 @@ export default class PriceCheckerContainer extends React.Component {
           : false,
       };
     });
+    const strategiesData = await getStrategies();
+    if (strategiesData.strategies) {
+      this.setState({ strategies: strategiesData.strategies });
+    }
     if (this.props.user.status.updates.length > 0) {
       const pendingOffer = this.props.user.status.updates
         .reverse()
@@ -167,10 +180,61 @@ export default class PriceCheckerContainer extends React.Component {
   };
 
   handleSetSelectedOffers = async () => {
+    this.setState({ loadingImport: true });
     const data = await setSelectedOffers(this.state.selectedOffers);
-    console.log(data);
+    if (data.success) {
+      this.setState({ loadingImport: false });
+      window.location.reload();
+    }
+  };
+  handleSelectedStrategy = (e) => {
+    this.setState({ selectedStrategy: e });
   };
 
+  updateOffersWithStrategy = async () => {
+    const data = await setStrategyForOffers(
+      this.state.selectedExistingOffers,
+      this.state.selectedStrategy
+    );
+    if (data) {
+      window.location.reload();
+    }
+  };
+
+  openNotification = (type) => {
+    notification[type]({
+      message: 'Succesfully Updated',
+      description: (
+        <div>
+          <span>
+            You have succesfully updated the shipping cost and purchase price of
+            the offer:
+          </span>
+          <br />
+          <br />
+          <span>{this.state.repricerOfferTitle}</span>
+        </div>
+      ),
+    });
+  };
+  handleAddProductCostData = async () => {
+    this.setState({ loadingUpdateProductDataCost: true });
+    const data = await updateRepricerOffer(
+      {
+        purchasePrice: this.state.purchaseCosts,
+        shippingCost: this.state.shippingCosts,
+      },
+      this.state.repricerOfferId
+    );
+    if (data.success) {
+      console.log('success');
+    }
+    this.setState({
+      loadingUpdateProductDataCost: false,
+      showProductCostData: false,
+    });
+    this.openNotification('success');
+  };
   handleReloadOffers = async () => {
     let data;
     this.setState({ loadingOffers: true });
@@ -231,6 +295,9 @@ export default class PriceCheckerContainer extends React.Component {
             handleCommission={this.handleCommission}
             handleSetSelectedOffers={this.handleSetSelectedOffers}
             handleUploadUrl={this.handleUploadUrl}
+            handleSelectedStrategy={this.handleSelectedStrategy}
+            updateOffersWithStrategy={this.updateOffersWithStrategy}
+            handleAddProductCostData={this.handleAddProductCostData}
             {...this.state}
             {...this.props}
           />

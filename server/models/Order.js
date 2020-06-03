@@ -3,31 +3,29 @@ const Schema = mongoose.Schema;
 
 const OrderSchema = new Schema({
   user_id: {
-    type: String
+    type: String,
   },
   order_id: {
-    type: String
+    type: String,
+    unique: true,
+    required: true,
   },
   platform: {
-    type: String
+    type: String,
   },
   status: {
     type: String,
-    default: 'OPEN'
-  },
-  registration_timestamp: {
-    type: Date,
-    default: Date.now()
+    default: 'OPEN',
   },
   order_date: {
-    type: String
+    type: String,
   },
   customer_details: {
-    type: Object
+    type: Object,
   },
   order_items: {
-    type: Array
-  }
+    type: Array,
+  },
 });
 
 module.exports = mongoose.model('Order', OrderSchema);

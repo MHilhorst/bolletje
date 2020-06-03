@@ -12,10 +12,11 @@ import {
   // InputNumber,
   Input,
   Alert,
+  InputNumber,
   Badge,
   Tooltip,
+  Divider,
 } from 'antd';
-// const { Text } = Typography;
 
 const getFormattedDate = (date) => {
   const dd = date.getDate();
@@ -70,19 +71,19 @@ export default class PriceCheckerView extends React.Component {
       },
     ];
     this.columns = [
-      {
-        title: 'Datafeed Sync',
-        dataIndex: 'sync',
-        align: 'center',
-        key: 'sync',
-        render: (value) => {
-          return value ? (
-            <>
-              <Badge status="success" style={{ width: 5, height: 5 }} />
-            </>
-          ) : null;
-        },
-      },
+      // {
+      //   title: 'Datafeed Sync',
+      //   dataIndex: 'sync',
+      //   align: 'center',
+      //   key: 'sync',
+      //   render: (value) => {
+      //     return value ? (
+      //       <>
+      //         <Badge status="success" style={{ width: 5, height: 5 }} />
+      //       </>
+      //     ) : null;
+      //   },
+      // },
       {
         title: 'Product Name',
         dataIndex: 'productName',
@@ -96,22 +97,27 @@ export default class PriceCheckerView extends React.Component {
         dataIndex: 'liveTracking',
         key: 'liveTracking',
         render: (value, record) => {
-          if (value) return <Tag color="blue">Tracking</Tag>;
-          else {
-            return (
-              <Tag color="orange">Not Tracking</Tag>
-              // <Button
-              //   onClick={() => {
-              //     console.log('clicked');
-              //     this.handleStartRepricer(record);
-              //   }}
-              // >
-              //   Activate
-              // </Button>
-            );
+          if (record.datafeed) {
+            return <Tag color="green">Datafeed</Tag>;
+          } else {
+            if (value) return <Tag color="blue">Tracking</Tag>;
+            else {
+              return (
+                <Tag color="orange">Not Tracking</Tag>
+                // <Button
+                //   onClick={() => {
+                //     console.log('clicked');
+                //     this.handleStartRepricer(record);
+                //   }}
+                // >
+                //   Activate
+                // </Button>
+              );
+            }
           }
         },
       },
+      { title: 'Strategy', dataIndex: 'strategyName', key: 'strategyName' },
       { title: 'ean', dataIndex: 'ean', key: 'ean' },
       {
         title: 'Current Price',
@@ -135,7 +141,10 @@ export default class PriceCheckerView extends React.Component {
         title: 'Minimum Price',
         dataIndex: 'minPrice',
         key: 'minPrice',
-        render: (value) => {
+        render: (value, record) => {
+          if (record.datafeed) {
+            return <Tag color="default">X</Tag>;
+          }
           return value ? '€ ' + value : null;
         },
       },
@@ -152,7 +161,10 @@ export default class PriceCheckerView extends React.Component {
         title: 'Increment Amount',
         dataIndex: 'incrementAmount',
         key: 'incrementAmount',
-        render: (value) => {
+        render: (value, record) => {
+          if (record.datafeed) {
+            return <Tag color="default">X</Tag>;
+          }
           return value ? '€ ' + value : null;
         },
       },
@@ -165,6 +177,22 @@ export default class PriceCheckerView extends React.Component {
           return <Tag color="orange">On Hold</Tag>;
         },
       },
+      {
+        title: 'Purchase Price',
+        dataIndex: 'purchasePrice',
+        key: 'purchasePrice',
+        render: (value, record) => {
+          if (value) {
+            return value;
+          } else {
+            return (
+              <Button onClick={() => this.openModalPurchase(record)}>
+                Add
+              </Button>
+            );
+          }
+        },
+      },
     ];
     this.timer = null;
     this.minListingTimer = null;
@@ -173,7 +201,21 @@ export default class PriceCheckerView extends React.Component {
     this.handleCancel = this.handleCancel.bind(this);
     this.handleChangeAutoPrice = this.handleChangeAutoPrice.bind(this);
   }
-
+  openModalPurchase = (repricerProduct) => {
+    this.props.onChange('showProductCostData', true);
+    this.props.onChange('purchaseCosts', repricerProduct.purchaseCosts);
+    this.props.onChange('repricerOfferId', repricerProduct.id);
+    this.props.onChange(
+      'repricerOfferTitle',
+      repricerProduct.productName.substring(
+        0,
+        repricerProduct.productName.length > 90
+          ? 90
+          : repricerProduct.productName.length
+      ) + (repricerProduct.productName.length > 90 ? '...' : '')
+    );
+    this.props.onChange('shippingCosts', repricerProduct.shippingCosts);
+  };
   handleStartRepricer = async (e) => {
     this.props.onChange('repricerActive', 2);
     this.props.onChange('activeRepricerOffer');
@@ -185,6 +227,7 @@ export default class PriceCheckerView extends React.Component {
   };
   handleCancel = () => {
     this.setState({ showCsvModal: false });
+    this.props.onChange('showProductCostData', false);
     this.props.onChange('selectOffersModal', false);
   };
   handleChangeAutoPrice = (checked) => {
@@ -237,6 +280,12 @@ export default class PriceCheckerView extends React.Component {
     }, WAIT_INTERVAL);
   };
 
+  handlePurchasePriceChange = (e) => {
+    this.props.onChange('purchaseCosts', e);
+  };
+  handleShippingCost = (e) => {
+    this.props.onChange('shippingCosts', e);
+  };
   handleSelectedReloadOfferId = (e) => {
     this.props.onChange('requestId', e);
   };
@@ -256,11 +305,9 @@ export default class PriceCheckerView extends React.Component {
                 value={'NEW'}
                 style={{ backgroundColor: '#fafafa', fontWeight: '500' }}
                 disabled={
-                  this.props.user.status.updates
-                    .reverse()
-                    .findIndex((update) => {
-                      return update.status === 'PENDING';
-                    }) === -1
+                  this.props.user.status.updates.findIndex((update) => {
+                    return update.status === 'PENDING';
+                  }) === -1
                     ? false
                     : true
                 }
@@ -270,6 +317,9 @@ export default class PriceCheckerView extends React.Component {
             </OptGroup>
             <OptGroup label={'PENDING'}>
               {this.props.user.status.updates
+                .sort((a, b) => {
+                  return b.timestamp - a.timestamp;
+                })
                 .map((update) => {
                   if (update.status === 'PENDING')
                     return (
@@ -282,25 +332,23 @@ export default class PriceCheckerView extends React.Component {
                       </Option>
                     );
                   else return false;
-                })
-                .sort((a, b) => {
-                  return b.timestamp - a.timestamp;
                 })}
             </OptGroup>
             <OptGroup label={'SUCCESS'}>
               {this.props.user.status.updates
+                .sort((a, b) => {
+                  return b.timestamp - a.timestamp;
+                })
                 .map((update) => {
-                  if (update.status === 'SUCCESS')
+                  if (update.status === 'SUCCESS') {
                     return (
                       <Option
                         value={update.id}
                         style={{ paddingBottom: 7 }}
                         disabled={
-                          this.props.user.status.updates
-                            .reverse()
-                            .findIndex((update) => {
-                              return update.status === 'PENDING';
-                            }) === -1
+                          this.props.user.status.updates.findIndex((update) => {
+                            return update.status === 'PENDING';
+                          }) === -1
                             ? false
                             : true
                         }
@@ -316,27 +364,25 @@ export default class PriceCheckerView extends React.Component {
                         />
                       </Option>
                     );
-                  else {
+                  } else {
                     return null;
                   }
-                })
-                .sort((a, b) => {
-                  return b.timestamp - a.timestamp;
                 })}
             </OptGroup>
             <OptGroup label={'FAILED'}>
               {this.props.user.status.updates
+                .sort((a, b) => {
+                  return b.timestamp - a.timestamp;
+                })
                 .map((update) => {
                   if (update.status === 'FAILURE') {
                     return (
                       <Option
                         value={update.id}
                         disabled={
-                          this.props.user.status.updates
-                            .reverse()
-                            .findIndex((update) => {
-                              return update.status === 'PENDING';
-                            }) === -1
+                          this.props.user.status.updates.findIndex((update) => {
+                            return update.status === 'PENDING';
+                          }) === -1
                             ? false
                             : true
                         }
@@ -351,9 +397,6 @@ export default class PriceCheckerView extends React.Component {
                   } else {
                     return false;
                   }
-                })
-                .sort((a, b) => {
-                  return b.timestamp - a.timestamp;
                 })}
             </OptGroup>
           </Select>
@@ -361,41 +404,73 @@ export default class PriceCheckerView extends React.Component {
             type="secondary"
             onClick={this.props.handleReloadOffers}
             loading={this.props.loadingOffers}
+            style={{ marginLeft: 6 }}
           >
             Reload your offers
           </Button>{' '}
           {this.props.user.hasOwnProperty('status') &&
             this.props.user.status.export_file && (
-              <Tag color="green">
+              <Tag color="green" style={{ marginLeft: 6 }}>
                 Last Load Succes at{' '}
                 {this.props.user.status.export_file_time_created}
               </Tag>
             )}
           {this.props.user.hasOwnProperty('status') &&
             !this.props.user.status.export_file && (
-              <Tag color="red" style={{ marginLeft: 12 }}>
+              <Tag color="red" style={{ marginLeft: 6 }}>
                 Previous Load failed at{' '}
                 {this.props.user.status.export_file_time_created}
               </Tag>
             )}
         </Box>
         <Box>
-          <Button
-            type="secondary"
-            // onClick={this.props.handleUploadUrl}
-            onClick={() => this.setState({ showCsvModal: true })}
-            loading={this.props.loadingCSVImport}
-          >
-            Upload CSV URL
-          </Button>
-        </Box>
-        <Box>
-          <Table dataSource={this.props.tableOffers} columns={this.columns} />
-          <span>Producten zijn gelinkt aan de volgende url: </span>
-          <a href={this.props.user.csv.url}>{'  '} link</a>
+          {this.props.selectedExistingOffers.length > 0 && (
+            <>
+              <Select
+                onChange={this.props.handleSelectedStrategy}
+                value={this.props.selectedStrategy}
+                style={{ width: 360, marginBottom: 12 }}
+              >
+                {this.props.strategies.map((strategy) => {
+                  return (
+                    <Option value={strategy._id}>
+                      {strategy.strategy_name}{' '}
+                      {strategy.strategy_type === 'targetBuyBox' ? (
+                        <Tag color="blue">Buy Box</Tag>
+                      ) : strategy.strategy_type === 'datafeed' ? (
+                        <Tag color="green">Datafeed</Tag>
+                      ) : null}
+                    </Option>
+                  );
+                })}
+              </Select>
+              <Button
+                onClick={this.props.updateOffersWithStrategy}
+                style={{ marginLeft: 6 }}
+              >
+                Update Offers with Strategy
+              </Button>
+            </>
+          )}
+          <Table
+            dataSource={this.props.tableOffers}
+            columns={this.columns}
+            rowSelection={{
+              type: 'checkbox',
+              onChange: (selectedRowKeys, selectedRows) => {
+                const selectedExistingOffers = selectedRows.map((row) => {
+                  return row.id;
+                });
+                this.props.onChange(
+                  'selectedExistingOffers',
+                  selectedExistingOffers
+                );
+              },
+            }}
+          />
         </Box>
 
-        <Modal
+        {/* <Modal
           title="CSV Upload URL"
           visible={this.state.showCsvModal}
           onOk={this.handleOk}
@@ -431,7 +506,7 @@ export default class PriceCheckerView extends React.Component {
               showIcon
             />
           )}
-        </Modal>
+        </Modal> */}
         <Modal
           title={`Select Offers ${
             this.props.selectedOffers.length + this.props.tableOffers.length
@@ -440,7 +515,7 @@ export default class PriceCheckerView extends React.Component {
           onOk={this.props.handleSetSelectedOffers}
           onCancel={this.handleCancel}
           okText={'Import'}
-          confirmLoading={this.props.loadingCSVImport}
+          confirmLoading={this.props.loadingImport}
           width={714}
         >
           {/* <Input
@@ -476,6 +551,54 @@ export default class PriceCheckerView extends React.Component {
               }),
             }}
           />
+        </Modal>
+        <Modal
+          title={`Add product cost data | ${this.props.repricerOfferTitle}`}
+          onOk={this.props.handleAddProductCostData}
+          okText={'Submit'}
+          onCancel={this.handleCancel}
+          width={460}
+          confirmLoading={this.props.loadingUpdateProductDataCost}
+          visible={this.props.showProductCostData}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <label style={{ fontWeight: 500 }}>Purchase Costs</label>
+            <InputNumber
+              style={{ marginTop: 6 }}
+              onChange={this.handlePurchasePriceChange}
+              defaultValue={this.props.purchaseCosts}
+              formatter={(value) =>
+                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+            />
+          </div>
+          <Divider />
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <label style={{ fontWeight: 500 }}>Shipping Costs</label>
+            <InputNumber
+              style={{ marginTop: 6 }}
+              onChange={this.handleShippingCost}
+              defaultValue={this.props.shippingCosts}
+              formatter={(value) =>
+                `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+            />
+          </div>
         </Modal>
       </>
     );

@@ -127,7 +127,7 @@ export default class OfferView extends React.Component {
       // }
       return [update.time_checked, update.quantity, update.price];
     });
-    graphData.unshift([graphData[0][0] - 1000, 0, graphData[0][2]]);
+    // graphData.unshift([graphData[0][0] - 1000, 0, graphData[0][2]]);
     return graphData;
   };
 

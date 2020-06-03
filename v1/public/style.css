@@ -66,3 +66,14 @@
 ::-webkit-scrollbar {
   width: 5px;
 }
+
+.ant-radio {
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.custom-card > .ant-card-head {
+  min-height: 0px;
+}

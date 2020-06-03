@@ -17,7 +17,9 @@ export default class PriceCheckerDetailedContainer extends React.Component {
       return {
         price: offer.ownOffer ? data.repricerOffer.price : offer.price,
         availabilityCode: offer.availabilityCode,
-        score: offer.seller.sellerRating.sellerRating,
+        score: offer.seller.hasOwnProperty('sellerRating')
+          ? offer.seller.sellerRating.sellerRating
+          : 0,
         sellerName: offer.seller.displayName,
         deliveryTime: offer.seller,
         id: offer.id,
